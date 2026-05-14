@@ -1,5 +1,5 @@
 {
-	"Generated": "2026-04-10T17:24:12.385Z",
+	"Generated": "2026-05-14T17:27:46.447Z",
 	"GitHubOrg": "stevenvelozo",
 	"DefaultBranch": "master",
 	"Groups": [
@@ -8,16 +8,6 @@
 			"Key": "dist",
 			"Description": "",
 			"Modules": [
-				{
-					"Name": "css",
-					"Repo": "css",
-					"Group": "dist",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
 				{
 					"Name": "indoctrinate_content_staging",
 					"Repo": "indoctrinate_content_staging",
@@ -35,18 +25,6 @@
 			"Key": "docs",
 			"Description": "",
 			"Modules": [
-				{
-					"Name": "css",
-					"Repo": "css",
-					"Group": "docs",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": [
-						"css/docuserve.css"
-					]
-				},
 				{
 					"Name": "example_applications",
 					"Repo": "example_applications",
@@ -175,6 +153,7 @@
 					],
 					"DocFiles": [
 						"README.md",
+						"_brand.json",
 						"_sidebar.md",
 						"_topbar.md",
 						"api.md",
@@ -244,6 +223,7 @@
 					],
 					"DocFiles": [
 						"README.md",
+						"_brand.json",
 						"_sidebar.md",
 						"_topbar.md",
 						"api.md",
@@ -316,6 +296,7 @@
 					],
 					"DocFiles": [
 						"README.md",
+						"_brand.json",
 						"_sidebar.md",
 						"_topbar.md",
 						"api.md",
