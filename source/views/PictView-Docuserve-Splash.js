@@ -95,7 +95,9 @@ const _ViewConfiguration =
 		}
 		.docuserve-splash-actions .primary {
 			background-color: var(--theme-color-brand-primary, #2E7D74);
-			color: var(--theme-color-background-panel, #fff);
+			/* text-on-brand falls to a fixed light hex — never to background-panel,
+			   which inverts contrast in dark themes (dark text on brand bg). */
+			color: var(--theme-color-text-on-brand, #fff);
 		}
 		.docuserve-splash-actions .primary:hover {
 			background-color: var(--theme-color-brand-primary-hover, #236660);

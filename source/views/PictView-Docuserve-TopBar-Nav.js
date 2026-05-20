@@ -36,7 +36,7 @@ const _ViewConfiguration =
 		}
 		.docuserve-nav-links a
 		{
-			color: var(--theme-color-text-on-brand, var(--theme-color-text-secondary, #B5AA9A));
+			color: var(--theme-color-text-on-brand, var(--theme-color-text-primary, #E8E0D4));
 			text-decoration: none;
 			padding: 0.45em 0.7em;
 			border-radius: 4px;
@@ -47,7 +47,10 @@ const _ViewConfiguration =
 		.docuserve-nav-links a:hover
 		{
 			background-color: var(--theme-color-background-hover, rgba(255, 255, 255, 0.06));
-			color: var(--theme-color-text-on-brand, var(--theme-color-background-panel, #fff));
+			/* Keep the text token chain on hover — falling to background-panel
+			   here inverts contrast (dark text on dark hover) in themes that
+			   don't define text-on-brand (e.g. night, twilight). */
+			color: var(--theme-color-text-on-brand, var(--theme-color-text-primary, #ffffff));
 		}
 		.docuserve-nav-version
 		{
