@@ -11,7 +11,8 @@ let _PictCLIProgram = new libCLIProgram(
 	[
 		require('./commands/Docuserve-Command-Serve.js'),
 		require('./commands/Docuserve-Command-Inject.js'),
-		require('./commands/Docuserve-Command-PrepareLocal.js')
+		require('./commands/Docuserve-Command-PrepareLocal.js'),
+		require('./commands/Docuserve-Command-StageExamples.js')
 	]);
 
 module.exports = _PictCLIProgram;

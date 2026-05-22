@@ -43,6 +43,15 @@ class DocuserveDocumentationProvider extends libPictProvider
 	{
 		return (pHref, pLinkText) =>
 		{
+			// Built example applications (and other static .html pages) are
+			// served as plain files alongside the docs.  Link straight to
+			// them in a new tab rather than SPA-routing through #/page/.
+			// Scoped strictly to the .html extension — .md pages, catalog
+			// routes and http(s):// links fall through unaffected.
+			if (!pHref.match(/^[a-z][a-z0-9+.-]*:/i) && pHref.match(/\.html($|[?#])/i))
+			{
+				return { href: pHref, target: '_blank', rel: 'noopener' };
+			}
 			// Convert internal doc links to hash routes
 			if (pHref.match(/^\//) || pHref.match(/^[^:]+\.md/))
 			{
@@ -1110,6 +1119,14 @@ class DocuserveDocumentationProvider extends libPictProvider
 				}
 			}
 			return '#/Home';
+		}
+
+		// Static .html pages (built example apps, etc.) — link straight to
+		// the file rather than SPA-routing it through #/page/.  Scoped
+		// strictly to the .html extension.
+		if (pHref.match(/\.html($|[?#])/i) && !pHref.match(/^[a-z][a-z0-9+.-]*:/i))
+		{
+			return pHref;
 		}
 
 		// Strip leading/trailing slashes for parsing
