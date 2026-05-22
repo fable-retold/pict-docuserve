@@ -1085,6 +1085,14 @@ class DocuserveDocumentationProvider extends libPictProvider
 			return '';
 		}
 
+		// Already a fully-formed hash route (e.g. "#/page/examples/foo/README").
+		// Pass it straight through — the author has named the exact route, so
+		// do not re-derive one (re-deriving would mangle it into "#/page/#/...").
+		if (pHref.match(/^#\//))
+		{
+			return pHref;
+		}
+
 		// Root home link
 		if (pHref === '/')
 		{
