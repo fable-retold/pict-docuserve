@@ -111,6 +111,70 @@ const _ViewConfiguration =
 			border-color: var(--theme-color-brand-primary-hover, #236660);
 			color: var(--theme-color-brand-primary, #2E7D74);
 		}
+		.docuserve-splash-examples {
+			max-width: 900px;
+			width: 100%;
+			margin-bottom: 2.5em;
+		}
+		/* No staged examples — collapse the section entirely. */
+		.docuserve-splash-examples:empty {
+			display: none;
+			margin: 0;
+		}
+		.docuserve-splash-examples-heading {
+			font-size: 0.95em;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--theme-color-text-muted, #8A7F72);
+			margin: 0 0 0.85em 0;
+		}
+		.docuserve-splash-examples table {
+			width: 100%;
+			border-collapse: collapse;
+			background: var(--theme-color-background-panel, #FFFFFF);
+			border: 1px solid var(--theme-color-border-default, #DDD6CA);
+			border-radius: 8px;
+			overflow: hidden;
+		}
+		.docuserve-splash-examples thead th {
+			text-align: left;
+			font-size: 0.72em;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			color: var(--theme-color-text-muted, #8A7F72);
+			padding: 0.7em 1.1em;
+			background: var(--theme-color-background-tertiary, #F4EFE6);
+		}
+		.docuserve-splash-examples tbody td {
+			padding: 0.7em 1.1em;
+			border-top: 1px solid var(--theme-color-border-default, #DDD6CA);
+			font-size: 0.9em;
+			color: var(--theme-color-text-secondary, #5E5549);
+			text-align: left;
+		}
+		.docuserve-splash-examples tbody tr:hover td {
+			background: var(--theme-color-background-tertiary, #F4EFE6);
+		}
+		.docuserve-splash-examples a {
+			color: var(--theme-color-brand-primary, #2E7D74);
+			font-weight: 600;
+			text-decoration: none;
+		}
+		.docuserve-splash-examples a:hover {
+			text-decoration: underline;
+		}
+		/* docs/README.md content rendered beneath the hero. */
+		.docuserve-splash-readme {
+			max-width: 820px;
+			margin: 0 auto;
+			padding: 3.5em 2em 5em 2em;
+			text-align: left;
+		}
+		.docuserve-splash-readme:empty {
+			display: none;
+		}
 	`,
 
 	Templates:
@@ -123,8 +187,10 @@ const _ViewConfiguration =
 	<div class="docuserve-splash-tagline" id="Docuserve-Splash-Tagline"></div>
 	<div class="docuserve-splash-description" id="Docuserve-Splash-Description"></div>
 	<div class="docuserve-splash-highlights" id="Docuserve-Splash-Highlights"></div>
+	<div class="docuserve-splash-examples" id="Docuserve-Splash-Examples"></div>
 	<div class="docuserve-splash-actions" id="Docuserve-Splash-Actions"></div>
 </div>
+<div class="docuserve-splash-readme" id="Docuserve-Splash-Readme"></div>
 `
 		}
 	],
@@ -154,11 +220,16 @@ class DocusserveSplashView extends libPictView
 		if (tmpDocuserve.CoverLoaded && tmpDocuserve.Cover)
 		{
 			this.renderFromCover(tmpDocuserve.Cover);
+			this.renderExamples(tmpDocuserve.Cover);
 		}
 		else
 		{
 			this.renderFromCatalog(tmpDocuserve);
 		}
+
+		// Render docs/README.md beneath the hero — the splash fills the
+		// viewport above the fold, the README content follows on scroll.
+		this.renderReadme();
 
 		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
 	}
@@ -268,6 +339,61 @@ class DocusserveSplashView extends libPictView
 
 		// Default action buttons
 		this.pict.ContentAssignment.assignContent('#Docuserve-Splash-Actions', '');
+	}
+
+	/**
+	 * Render the "Interactive Examples" section of the splash from the
+	 * examples region of _cover.md.  When the cover carries no examples the
+	 * section is left empty — CSS collapses it — so it appears only when a
+	 * module has staged interactive examples.
+	 *
+	 * @param {Object} pCover - The parsed cover data.
+	 */
+	renderExamples(pCover)
+	{
+		let tmpExamplesMarkdown = (pCover && pCover.ExamplesMarkdown) ? pCover.ExamplesMarkdown : '';
+		let tmpDocProvider = this.pict.providers['Docuserve-Documentation'];
+
+		if (!tmpExamplesMarkdown || !tmpDocProvider || !tmpDocProvider._ContentProvider)
+		{
+			this.pict.ContentAssignment.assignContent('#Docuserve-Splash-Examples', '');
+			return;
+		}
+
+		let tmpLinkResolver = tmpDocProvider._createLinkResolver('', '', '');
+		let tmpExamplesHTML = tmpDocProvider._ContentProvider.parseMarkdown(tmpExamplesMarkdown, tmpLinkResolver);
+		this.pict.ContentAssignment.assignContent('#Docuserve-Splash-Examples',
+			'<h2 class="docuserve-splash-examples-heading">Interactive Examples</h2>' + tmpExamplesHTML);
+	}
+
+	/**
+	 * Render docs/README.md beneath the splash hero.  The landing page is the
+	 * full-viewport splash above the fold and the module's README content on
+	 * scroll.  A missing or unreadable README simply leaves the section empty.
+	 */
+	renderReadme()
+	{
+		let tmpDocProvider = this.pict.providers['Docuserve-Documentation'];
+		let tmpDocsBase = this.pict.AppData.Docuserve.DocsBaseURL || '';
+
+		fetch(tmpDocsBase + 'README.md')
+			.then((pResponse) => (pResponse.ok ? pResponse.text() : null))
+			.then((pMarkdown) =>
+			{
+				if (!pMarkdown || !tmpDocProvider || !tmpDocProvider._ContentProvider)
+				{
+					this.pict.ContentAssignment.assignContent('#Docuserve-Splash-Readme', '');
+					return;
+				}
+				let tmpLinkResolver = tmpDocProvider._createLinkResolver('', '', 'README.md');
+				let tmpImageResolver = tmpDocProvider._createImageResolver(tmpDocsBase + 'README.md');
+				let tmpHTML = tmpDocProvider._ContentProvider.parseMarkdown(pMarkdown, tmpLinkResolver, tmpImageResolver);
+				this.pict.ContentAssignment.assignContent('#Docuserve-Splash-Readme', '<div class="pict-content">' + tmpHTML + '</div>');
+			})
+			.catch(() =>
+			{
+				this.pict.ContentAssignment.assignContent('#Docuserve-Splash-Readme', '');
+			});
 	}
 
 	/**

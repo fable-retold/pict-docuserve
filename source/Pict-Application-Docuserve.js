@@ -583,13 +583,13 @@ class DocuserveApplication extends libPictApplication
 					// Show the README on success, else the original
 					// not-found page (it names the path the user asked for).
 					tmpContentView.displayContent(pReadmeError ? pHTML : pReadmeHTML);
-				});
+				}, '', '', tmpReadmePath);
 				return;
 			}
 			// fetchDocument always provides displayable HTML in pHTML,
 			// even on error, so we can use it directly.
 			tmpContentView.displayContent(pHTML);
-		});
+		}, '', '', tmpPath);
 	}
 
 	/**

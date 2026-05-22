@@ -275,7 +275,7 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 			return;
 		}
 
-		// Regenerate the marker-delimited index + intro quick-links.
+		// Regenerate the marker-delimited examples index + the splash region.
 		try
 		{
 			this._writeExamplesIndex(tmpStaged, tmpDocsFolder);
@@ -287,11 +287,11 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 
 		try
 		{
-			this._writeIntroQuickLinks(tmpStaged, tmpDocsFolder);
+			this._writeCoverExamples(tmpStaged, tmpDocsFolder);
 		}
 		catch (pError)
 		{
-			this.log.warn(`Could not update intro quick-links: ${pError.message}`);
+			this.log.warn(`Could not update splash examples region: ${pError.message}`);
 		}
 
 		this.log.info(`Staged ${tmpStaged.length} example application(s): ${tmpStaged.map((pEx) => pEx.Name).join(', ')}`);
@@ -492,7 +492,10 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 		let tmpTitle = pExample.Flag.Title || tmpName;
 		let tmpSummary = pExample.Flag.Summary || pExample.Package.description || '';
 
-		let tmpInner = `> **[&#9654; Launch the live app](${mdSafeUrl('examples/' + tmpName + '/index.html')})** — runs in your browser, opens in a new tab.`;
+		// The writeup lives at docs/examples/<name>/README.md, so index.html
+		// is its sibling — a document-relative href docuserve resolves the
+		// same way it resolves the writeup's other links.
+		let tmpInner = `> **[&#9654; Launch the live app](index.html)** — runs in your browser, opens in a new tab.`;
 
 		let tmpText;
 		if (libFS.existsSync(tmpReadmePath))
@@ -536,7 +539,9 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 		let tmpRows = pStaged.map((pEx) =>
 		{
 			let tmpComplexity = escapeTableCell(pEx.Complexity) || '—';
-			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl('examples/' + pEx.Name + '/README.md')}) | ${tmpComplexity} | ${escapeTableCell(pEx.Summary)} | [&#9654; Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
+			// Both links are relative to this index (docs/examples/README.md),
+			// so they omit the examples/ segment.
+			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl(pEx.Name + '/README.md')}) | ${tmpComplexity} | ${escapeTableCell(pEx.Summary)} | [&#9654; Launch](${mdSafeUrl(pEx.Name + '/index.html')}) |`;
 		});
 		let tmpInner = [
 			'| Example | Complexity | Summary | Live |',
@@ -558,43 +563,43 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 	}
 
 	/**
-	 * Maintain the generated "Example Applications" quick-links block on the
-	 * documentation intro page at docs/README.md.
+	 * Maintain the generated examples region in docs/_cover.md.  docuserve's
+	 * Splash view renders this region as the "Interactive Examples" section of
+	 * the landing page.  When _cover.md is absent the region is not created —
+	 * the splash simply shows no examples section.
 	 *
 	 * @param {object[]} pStaged - Staged example metadata.
 	 * @param {string} pDocsFolder - The target documentation folder.
 	 */
-	_writeIntroQuickLinks(pStaged, pDocsFolder)
+	_writeCoverExamples(pStaged, pDocsFolder)
 	{
-		let tmpReadmePath = libPath.join(pDocsFolder, 'README.md');
-
-		let tmpBullets = pStaged.map((pEx) =>
+		let tmpCoverPath = libPath.join(pDocsFolder, '_cover.md');
+		if (!libFS.existsSync(tmpCoverPath))
 		{
-			let tmpSummary = String(pEx.Summary || '').replace(/\r?\n/g, ' ').trim();
-			return `- **[${pEx.Title}](${mdSafeUrl('examples/' + pEx.Name + '/README.md')})** — ${tmpSummary} · [&#9654; Launch live app](${mdSafeUrl('examples/' + pEx.Name + '/index.html')})`;
-		});
-		let tmpInner = '*Live, runnable example applications — each opens in a new browser tab:*\n\n' + tmpBullets.join('\n');
+			this.log.info(`No _cover.md at [${tmpCoverPath}]; skipping splash examples region.`);
+			return;
+		}
 
-		let tmpText = libFS.existsSync(tmpReadmePath)
-			? libFS.readFileSync(tmpReadmePath, 'utf8')
-			: '# Documentation\n';
+		let tmpRows = pStaged.map((pEx) =>
+		{
+			let tmpComplexity = escapeTableCell(pEx.Complexity) || '—';
+			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl('examples/' + pEx.Name + '/README.md')}) | ${tmpComplexity} | [&#9654; Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
+		});
+		let tmpInner = [
+			'| Example | Complexity | Launch |',
+			'|---------|------------|--------|'
+		].concat(tmpRows).join('\n');
+
+		let tmpText = libFS.readFileSync(tmpCoverPath, 'utf8');
 
 		tmpText = replaceRegion(tmpText, _Marker.QuickLinksStart, _Marker.QuickLinksEnd, tmpInner,
 			(pBody, pRegion) =>
 			{
-				// Prefer to place the block directly under an existing
-				// "Example Applications" heading.
-				let tmpHeading = pBody.match(/^#{2,}\s+Example Applications\s*$/m);
-				if (tmpHeading)
-				{
-					let tmpIndex = pBody.indexOf(tmpHeading[0]) + tmpHeading[0].length;
-					return pBody.substring(0, tmpIndex) + '\n\n' + pRegion + '\n' + pBody.substring(tmpIndex);
-				}
-				// Otherwise append a new section at the end of the page.
-				return pBody.replace(/\s*$/, '') + '\n\n## Example Applications\n\n' + pRegion + '\n';
+				// No markers yet — append the region at the end of the cover.
+				return pBody.replace(/\s*$/, '') + '\n\n' + pRegion + '\n';
 			});
 
-		libFS.writeFileSync(tmpReadmePath, tmpText);
+		libFS.writeFileSync(tmpCoverPath, tmpText);
 	}
 }
 

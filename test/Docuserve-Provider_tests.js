@@ -510,6 +510,100 @@ suite
 
 		suite
 		(
+			'Module-Mode Link Resolution',
+			function()
+			{
+				test
+				(
+					'_toModulePageRoute resolves a sibling link against the current document directory.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModulePageRoute('001-select.md', 'input_providers/README.md')).to.equal('#/page/input_providers/001-select');
+						Expect(tmpProvider._toModulePageRoute('./settings-manager.md', 'services/README.md')).to.equal('#/page/services/settings-manager');
+						fDone();
+					}
+				);
+				test
+				(
+					'_toModulePageRoute resolves ../ against the current document directory.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModulePageRoute('../../Layouts.md', 'examples/gradebook/README.md')).to.equal('#/page/Layouts');
+						Expect(tmpProvider._toModulePageRoute('../Configuration.md', 'input_providers/001-select.md')).to.equal('#/page/Configuration');
+						fDone();
+					}
+				);
+				test
+				(
+					'_toModulePageRoute treats a /-rooted href as docs-root-relative.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModulePageRoute('/Configuration.md', 'examples/gradebook/README.md')).to.equal('#/page/Configuration');
+						fDone();
+					}
+				);
+				test
+				(
+					'_toModulePageRoute clamps ../ at the docs root.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModulePageRoute('../../../../Layouts.md', 'examples/gradebook/README.md')).to.equal('#/page/Layouts');
+						fDone();
+					}
+				);
+				test
+				(
+					'_toModulePageRoute resolves from the docs root when no document path is given.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModulePageRoute('input_providers/001-select.md')).to.equal('#/page/input_providers/001-select');
+						Expect(tmpProvider._toModulePageRoute('/')).to.equal('#/Home');
+						fDone();
+					}
+				);
+				test
+				(
+					'convertDocLink resolves module-mode links against the current document directory.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						tmpProvider._Catalog = { Mode: 'module', Groups: [] };
+						Expect(tmpProvider.convertDocLink('../../Solvers.md', '', '', 'examples/gradebook/README.md')).to.equal('#/page/Solvers');
+						Expect(tmpProvider.convertDocLink('002-datetime.md', '', '', 'input_providers/001-select.md')).to.equal('#/page/input_providers/002-datetime');
+						fDone();
+					}
+				);
+				test
+				(
+					'_toModuleAssetHref resolves a relative asset link against the current document directory.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModuleAssetHref('index.html', 'examples/gradebook/README.md')).to.equal('examples/gradebook/index.html');
+						Expect(tmpProvider._toModuleAssetHref('../assets/diagram.svg', 'examples/gradebook/README.md')).to.equal('examples/assets/diagram.svg');
+						fDone();
+					}
+				);
+				test
+				(
+					'_toModuleAssetHref treats a /-rooted asset link as docs-root-relative.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider._toModuleAssetHref('/shared/logo.png', 'examples/gradebook/README.md')).to.equal('shared/logo.png');
+						fDone();
+					}
+				);
+			}
+		);
+
+		suite
+		(
 			'Sidebar Markdown Parsing',
 			function()
 			{

@@ -44,26 +44,43 @@ class DocuserveDocumentationProvider extends libPictProvider
 	{
 		return (pHref, pLinkText) =>
 		{
+			let tmpHref = String(pHref || '');
+			let tmpIsModuleMode = (this.getDocsMode() === 'module');
+
 			// Built example applications (and other static .html pages) are
 			// served as plain files alongside the docs.  Link straight to
-			// them in a new tab rather than SPA-routing through #/page/.
-			// Scoped strictly to the .html extension — .md pages, catalog
-			// routes and http(s):// links fall through unaffected.
-			if (!pHref.match(/^[a-z][a-z0-9+.-]*:/i) && pHref.match(/\.html($|[?#])/i))
+			// them in a new tab rather than SPA-routing through #/page/.  In
+			// module mode the href is resolved against the current
+			// document's directory, exactly the way a .md link is — so every
+			// relative link in the docs shares one base.
+			if (!tmpHref.match(/^[a-z][a-z0-9+.-]*:/i) && tmpHref.match(/\.html($|[?#])/i))
 			{
-				return { href: pHref, target: '_blank', rel: 'noopener' };
+				let tmpAssetHref = tmpIsModuleMode ? this._toModuleAssetHref(tmpHref, pCurrentDocPath) : tmpHref;
+				return { href: tmpAssetHref, target: '_blank', rel: 'noopener' };
 			}
 			// Convert internal doc links to hash routes
-			if (pHref.match(/^\//) || pHref.match(/^[^:]+\.md/))
+			if (tmpHref.match(/^\//) || tmpHref.match(/^[^:]+\.md/))
 			{
-				let tmpRoute = this.convertDocLink(pHref, pCurrentGroup, pCurrentModule, pCurrentDocPath);
+				let tmpRoute = this.convertDocLink(tmpHref, pCurrentGroup, pCurrentModule, pCurrentDocPath);
 				return { href: tmpRoute };
 			}
 			// Check if this is a GitHub URL that matches a catalog module
-			let tmpCatalogRoute = this.resolveGitHubURLToRoute(pHref);
+			let tmpCatalogRoute = this.resolveGitHubURLToRoute(tmpHref);
 			if (tmpCatalogRoute)
 			{
 				return { href: tmpCatalogRoute };
+			}
+			// Module mode: a remaining relative link (a directory, a media
+			// file, a .json) is resolved against the current document's
+			// directory too, so it shares the one base every other link uses
+			// rather than silently falling back to the docs root.
+			if (tmpIsModuleMode
+				&& tmpHref
+				&& (tmpHref.charAt(0) !== '#')
+				&& (tmpHref.indexOf('//') !== 0)
+				&& !tmpHref.match(/^[a-z][a-z0-9+.-]*:/i))
+			{
+				return { href: this._toModuleAssetHref(tmpHref, pCurrentDocPath) };
 			}
 			// Use default behavior for other links
 			return null;
@@ -316,14 +333,37 @@ class DocuserveDocumentationProvider extends libPictProvider
 			Tagline: '',
 			Description: '',
 			Highlights: [],
-			Actions: []
+			Actions: [],
+			ExamplesMarkdown: ''
 		};
 
 		let tmpLines = pMarkdown.split('\n');
+		let tmpInExamples = false;
 
 		for (let i = 0; i < tmpLines.length; i++)
 		{
 			let tmpLine = tmpLines[i].trim();
+
+			// Generated examples region — collected verbatim for the splash's
+			// "Interactive Examples" section, never parsed as cover fields.
+			if (tmpLine === '<!-- docuserve:examples:start -->')
+			{
+				tmpInExamples = true;
+				continue;
+			}
+			if (tmpLine === '<!-- docuserve:examples:end -->')
+			{
+				tmpInExamples = false;
+				continue;
+			}
+			if (tmpInExamples)
+			{
+				if (tmpLine)
+				{
+					tmpCover.ExamplesMarkdown += (tmpCover.ExamplesMarkdown ? '\n' : '') + tmpLine;
+				}
+				continue;
+			}
 
 			if (!tmpLine)
 			{
@@ -783,19 +823,113 @@ class DocuserveDocumentationProvider extends libPictProvider
 
 	/**
 	 * Module-mode link resolution: every internal documentation reference is
-	 * a local page.  Normalizes an href to a #/page/ hash route.
+	 * a local page.  Relative links (./sibling.md, ../other.md, bare names)
+	 * resolve against the directory of the document that contains them — the
+	 * way the links read on disk — while a /-rooted href resolves against the
+	 * docs root.  "." and ".." segments are collapsed; ".." is clamped at the
+	 * docs root so a link can never escape above it.
 	 *
 	 * @param {string} pHref - The raw link href
+	 * @param {string} [pCurrentDocPath] - Docs-root-relative path of the
+	 *                  document the link lives in (e.g.
+	 *                  "examples/gradebook/README.md").  Absent for root-level
+	 *                  contexts such as the sidebar.
 	 * @returns {string} A #/page/ hash route (#/Home for an empty path)
 	 */
-	_toModulePageRoute(pHref)
+	_toModulePageRoute(pHref, pCurrentDocPath)
 	{
-		let tmpPath = String(pHref || '').replace(/^\.\//, '').replace(/^\//, '').replace(/\/+$/, '');
+		let tmpHref = String(pHref || '').trim();
+
+		// A /-rooted href resolves against the docs root; every other href
+		// resolves against the current document's directory.
+		let tmpBaseDir = '';
+		if (tmpHref.charAt(0) === '/')
+		{
+			tmpHref = tmpHref.replace(/^\/+/, '');
+		}
+		else if (pCurrentDocPath)
+		{
+			let tmpDirParts = String(pCurrentDocPath).split('/');
+			tmpDirParts.pop();
+			tmpBaseDir = tmpDirParts.join('/');
+		}
+
+		let tmpPath = this._resolveRelativeDocPath(tmpBaseDir, tmpHref);
 		if (!tmpPath)
 		{
 			return '#/Home';
 		}
 		return '#/page/' + tmpPath.replace(/\.md$/i, '');
+	}
+
+	/**
+	 * Resolve a relative href against a base directory, collapsing "." and
+	 * ".." segments.  ".." is clamped at the docs root — it can never escape
+	 * above it.  Both arguments are POSIX-style docs-root-relative paths.
+	 *
+	 * @param {string} pBaseDir - The directory the href is relative to.
+	 * @param {string} pHref - The href to resolve.
+	 * @returns {string} The resolved docs-root-relative path (no leading slash).
+	 */
+	_resolveRelativeDocPath(pBaseDir, pHref)
+	{
+		let tmpSegments = [];
+		let tmpCombined = (pBaseDir ? pBaseDir + '/' : '') + String(pHref || '');
+		let tmpParts = tmpCombined.split('/');
+		for (let i = 0; i < tmpParts.length; i++)
+		{
+			let tmpPart = tmpParts[i];
+			if ((tmpPart === '') || (tmpPart === '.'))
+			{
+				continue;
+			}
+			if (tmpPart === '..')
+			{
+				if (tmpSegments.length > 0)
+				{
+					tmpSegments.pop();
+				}
+				continue;
+			}
+			tmpSegments.push(tmpPart);
+		}
+		return tmpSegments.join('/');
+	}
+
+	/**
+	 * Module-mode resolution for a non-routed link — a built .html page, a
+	 * media file, a directory.  Resolves the href against the current
+	 * document's directory (a /-rooted href against the docs root), the same
+	 * way _toModulePageRoute resolves a .md link, and returns a plain
+	 * docs-root-relative href.  The browser resolves that href against the
+	 * docs-root index.html, so it points at the right file from any page.
+	 *
+	 * @param {string} pHref - The raw link href
+	 * @param {string} [pCurrentDocPath] - Docs-root-relative path of the
+	 *                  document the link lives in.
+	 * @returns {string} A docs-root-relative href.
+	 */
+	_toModuleAssetHref(pHref, pCurrentDocPath)
+	{
+		let tmpHref = String(pHref || '').trim();
+		if (!tmpHref)
+		{
+			return tmpHref;
+		}
+
+		let tmpBaseDir = '';
+		if (tmpHref.charAt(0) === '/')
+		{
+			tmpHref = tmpHref.replace(/^\/+/, '');
+		}
+		else if (pCurrentDocPath)
+		{
+			let tmpDirParts = String(pCurrentDocPath).split('/');
+			tmpDirParts.pop();
+			tmpBaseDir = tmpDirParts.join('/');
+		}
+
+		return this._resolveRelativeDocPath(tmpBaseDir, tmpHref);
 	}
 
 	/**
@@ -1661,10 +1795,11 @@ class DocuserveDocumentationProvider extends libPictProvider
 	 */
 	convertDocLink(pHref, pCurrentGroup, pCurrentModule, pCurrentDocPath)
 	{
-		// Single-module docs site: every internal reference is a local page.
+		// Single-module docs site: every internal reference is a local page,
+		// resolved relative to the current document's directory.
 		if (this.getDocsMode() === 'module')
 		{
-			return this._toModulePageRoute(pHref);
+			return this._toModulePageRoute(pHref, pCurrentDocPath);
 		}
 
 		// Strip leading ./ prefix for relative paths
