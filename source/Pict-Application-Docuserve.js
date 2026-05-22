@@ -573,6 +573,19 @@ class DocuserveApplication extends libPictApplication
 
 		tmpDocProvider.fetchLocalDocument(tmpPath, (pError, pHTML) =>
 		{
+			// On a miss the path may be a directory reference — retry
+			// <path>/README.md so directory-style links resolve.
+			if (pError && !tmpPath.match(/(^|\/)README\.md$/i))
+			{
+				let tmpReadmePath = tmpPath.replace(/\.md$/i, '') + '/README.md';
+				tmpDocProvider.fetchLocalDocument(tmpReadmePath, (pReadmeError, pReadmeHTML) =>
+				{
+					// Show the README on success, else the original
+					// not-found page (it names the path the user asked for).
+					tmpContentView.displayContent(pReadmeError ? pHTML : pReadmeHTML);
+				});
+				return;
+			}
 			// fetchDocument always provides displayable HTML in pHTML,
 			// even on error, so we can use it directly.
 			tmpContentView.displayContent(pHTML);

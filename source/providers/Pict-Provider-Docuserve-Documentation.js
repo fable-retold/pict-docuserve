@@ -17,6 +17,7 @@ class DocuserveDocumentationProvider extends libPictProvider
 		super(pFable, pOptions, pServiceHash);
 
 		this._Catalog = null;
+		this._KeywordIndexMode = null;
 		this._ContentCache = {};
 		// (group, module) -> playground config | null (negative cache).
 		// Loaded lazily by loadPlaygroundConfig on first navigation into
@@ -737,6 +738,7 @@ class DocuserveDocumentationProvider extends libPictProvider
 				{
 					this._LunrIndex = libLunr.Index.load(pIndexData.LunrIndex);
 					this._KeywordDocuments = pIndexData.Documents;
+					this._KeywordIndexMode = (pIndexData.Mode === 'module' || pIndexData.Mode === 'ecosystem') ? pIndexData.Mode : null;
 					this.pict.AppData.Docuserve.KeywordIndexLoaded = true;
 					this.pict.AppData.Docuserve.KeywordDocumentCount = pIndexData.DocumentCount || 0;
 					this.log.info(`Docuserve: Keyword index loaded (${pIndexData.DocumentCount || 0} documents).`);
@@ -753,6 +755,47 @@ class DocuserveDocumentationProvider extends libPictProvider
 				this.log.warn(`Docuserve: Error loading keyword index: ${pError}`);
 				return tmpCallback();
 			});
+	}
+
+	/**
+	 * Resolve the documentation site mode.
+	 *
+	 *   'module'    — a single module's own docs site; every doc is a local
+	 *                 page (#/page/<docpath>).
+	 *   'ecosystem' — a catalog of <group>/<module> repos (#/doc/...).
+	 *   'legacy'    — built before the Mode stamp existed; callers keep the
+	 *                 pre-Mode heuristic so old docs sites are unaffected.
+	 *
+	 * @returns {string} 'module' | 'ecosystem' | 'legacy'
+	 */
+	getDocsMode()
+	{
+		if (this._Catalog && (this._Catalog.Mode === 'module' || this._Catalog.Mode === 'ecosystem'))
+		{
+			return this._Catalog.Mode;
+		}
+		if (this._KeywordIndexMode === 'module' || this._KeywordIndexMode === 'ecosystem')
+		{
+			return this._KeywordIndexMode;
+		}
+		return 'legacy';
+	}
+
+	/**
+	 * Module-mode link resolution: every internal documentation reference is
+	 * a local page.  Normalizes an href to a #/page/ hash route.
+	 *
+	 * @param {string} pHref - The raw link href
+	 * @returns {string} A #/page/ hash route (#/Home for an empty path)
+	 */
+	_toModulePageRoute(pHref)
+	{
+		let tmpPath = String(pHref || '').replace(/^\.\//, '').replace(/^\//, '').replace(/\/+$/, '');
+		if (!tmpPath)
+		{
+			return '#/Home';
+		}
+		return '#/page/' + tmpPath.replace(/\.md$/i, '');
 	}
 
 	/**
@@ -873,6 +916,7 @@ class DocuserveDocumentationProvider extends libPictProvider
 		try
 		{
 			let tmpLunrResults = this._LunrIndex.search(pQuery);
+			let tmpMode = this.getDocsMode();
 
 			for (let i = 0; i < tmpLunrResults.length; i++)
 			{
@@ -885,24 +929,37 @@ class DocuserveDocumentationProvider extends libPictProvider
 					continue;
 				}
 
-				// Build the hash route from the document key (group/module/docpath)
-				let tmpParts = tmpRef.split('/');
+				// Build the hash route for this result based on the site mode.
 				let tmpRoute = '';
-				if (tmpParts.length >= 2)
+				if (tmpMode === 'module')
 				{
-					// Check whether this group/module exists in the catalog.
-					// If it does, route to #/doc/ which fetches from GitHub.
-					// If not, fall back to #/page/ which fetches locally.
-					let tmpGroup = tmpParts[0];
-					let tmpModule = tmpParts[1];
-
-					if (this.isModuleInCatalog(tmpGroup, tmpModule))
+					// Single-module site: every doc is a local page; the
+					// keyword-index key is the docs-relative path.
+					tmpRoute = '#/page/' + (tmpDoc.DocPath || tmpRef);
+				}
+				else if (tmpMode === 'ecosystem')
+				{
+					// Ecosystem: catalog modules render from their GitHub docs.
+					if (tmpDoc.Group && tmpDoc.Module && tmpDoc.DocPath)
+					{
+						tmpRoute = '#/doc/' + tmpDoc.Group + '/' + tmpDoc.Module + '/' + tmpDoc.DocPath;
+					}
+					else
+					{
+						tmpRoute = '#/page/' + tmpRef;
+					}
+				}
+				else
+				{
+					// Legacy keyword index (no Mode stamp) — the pre-Mode
+					// heuristic: split the key and check the catalog.
+					let tmpParts = tmpRef.split('/');
+					if (tmpParts.length >= 2 && this.isModuleInCatalog(tmpParts[0], tmpParts[1]))
 					{
 						tmpRoute = '#/doc/' + tmpRef;
 					}
 					else
 					{
-						// Local document — route via #/page/ using the full ref path
 						tmpRoute = '#/page/' + tmpRef;
 					}
 				}
@@ -1135,6 +1192,13 @@ class DocuserveDocumentationProvider extends libPictProvider
 		if (pHref.match(/\.html($|[?#])/i) && !pHref.match(/^[a-z][a-z0-9+.-]*:/i))
 		{
 			return pHref;
+		}
+
+		// Single-module docs site: every internal reference is a local page —
+		// no catalog #/doc/ routing, no group/module guesswork.
+		if (this.getDocsMode() === 'module')
+		{
+			return this._toModulePageRoute(pHref);
 		}
 
 		// Strip leading/trailing slashes for parsing
@@ -1597,6 +1661,12 @@ class DocuserveDocumentationProvider extends libPictProvider
 	 */
 	convertDocLink(pHref, pCurrentGroup, pCurrentModule, pCurrentDocPath)
 	{
+		// Single-module docs site: every internal reference is a local page.
+		if (this.getDocsMode() === 'module')
+		{
+			return this._toModulePageRoute(pHref);
+		}
+
 		// Strip leading ./ prefix for relative paths
 		let tmpPath = pHref.replace(/^\.\//, '');
 		// Remove leading slash
