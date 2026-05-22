@@ -1,373 +1,160 @@
 {
-	"Generated": "2026-05-14T17:27:46.447Z",
+	"Generated": "2026-05-22T05:36:49.034Z",
+	"Mode": "module",
 	"GitHubOrg": "stevenvelozo",
 	"DefaultBranch": "master",
-	"Groups": [
-		{
-			"Name": "Dist",
-			"Key": "dist",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "indoctrinate_content_staging",
-					"Repo": "indoctrinate_content_staging",
-					"Group": "dist",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		},
-		{
-			"Name": "Docs",
-			"Key": "docs",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "example_applications",
-					"Repo": "example_applications",
-					"Group": "docs",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": true,
-					"Sidebar": [
-						{
-							"Title": "Getting Started",
-							"Children": [
-								{
-									"Title": "Quick Start",
-									"Path": "quick-start.md"
-								},
-								{
-									"Title": "Configuration",
-									"Path": "configuration.md"
-								}
-							]
-						},
-						{
-							"Title": "Core Concepts",
-							"Children": [
-								{
-									"Title": "Tasks",
-									"Path": "tasks.md"
-								},
-								{
-									"Title": "Lists",
-									"Path": "lists.md"
-								},
-								{
-									"Title": "Tags & Filters",
-									"Path": "tags.md"
-								}
-							]
-						},
-						{
-							"Title": "API Reference",
-							"Path": "api.md"
-						}
-					],
-					"DocFiles": [
-						"example_applications/contacts-app/README.md",
-						"example_applications/contacts-app/_sidebar.md",
-						"example_applications/contacts-app/_topbar.md",
-						"example_applications/contacts-app/api.md",
-						"example_applications/contacts-app/configuration.md",
-						"example_applications/contacts-app/cover.md",
-						"example_applications/contacts-app/data-model.md",
-						"example_applications/contacts-app/errorpage.md",
-						"example_applications/contacts-app/quick-start.md",
-						"example_applications/contacts-app/relationships.md",
-						"example_applications/sports-stats-api/README.md",
-						"example_applications/sports-stats-api/_sidebar.md",
-						"example_applications/sports-stats-api/_topbar.md",
-						"example_applications/sports-stats-api/api.md",
-						"example_applications/sports-stats-api/authentication.md",
-						"example_applications/sports-stats-api/cover.md",
-						"example_applications/sports-stats-api/errorpage.md",
-						"example_applications/sports-stats-api/games.md",
-						"example_applications/sports-stats-api/leagues-teams.md",
-						"example_applications/sports-stats-api/players.md",
-						"example_applications/sports-stats-api/quick-start.md",
-						"example_applications/sports-stats-api/standings.md",
-						"example_applications/sports-stats-api/websocket.md",
-						"example_applications/todo-app/README.md",
-						"example_applications/todo-app/_sidebar.md",
-						"example_applications/todo-app/_topbar.md",
-						"example_applications/todo-app/api.md",
-						"example_applications/todo-app/configuration.md",
-						"example_applications/todo-app/cover.md",
-						"example_applications/todo-app/errorpage.md",
-						"example_applications/todo-app/lists.md",
-						"example_applications/todo-app/quick-start.md",
-						"example_applications/todo-app/tags.md",
-						"example_applications/todo-app/tasks.md"
-					]
-				}
-			]
-		},
-		{
-			"Name": "Example_applications",
-			"Key": "example_applications",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "contacts-app",
-					"Repo": "contacts-app",
-					"Group": "example_applications",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": true,
-					"Sidebar": [
-						{
-							"Title": "Getting Started",
-							"Children": [
-								{
-									"Title": "Quick Start",
-									"Path": "quick-start.md"
-								},
-								{
-									"Title": "Configuration",
-									"Path": "configuration.md"
-								}
-							]
-						},
-						{
-							"Title": "Data Model",
-							"Children": [
-								{
-									"Title": "Contacts",
-									"Path": "data-model.md"
-								},
-								{
-									"Title": "Relationships",
-									"Path": "relationships.md"
-								}
-							]
-						},
-						{
-							"Title": "API Reference",
-							"Path": "api.md"
-						}
-					],
-					"DocFiles": [
-						"README.md",
-						"_brand.json",
-						"_sidebar.md",
-						"_topbar.md",
-						"api.md",
-						"configuration.md",
-						"cover.md",
-						"data-model.md",
-						"errorpage.md",
-						"quick-start.md",
-						"relationships.md"
-					]
-				},
-				{
-					"Name": "sports-stats-api",
-					"Repo": "sports-stats-api",
-					"Group": "example_applications",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": true,
-					"Sidebar": [
-						{
-							"Title": "Getting Started",
-							"Children": [
-								{
-									"Title": "Quick Start",
-									"Path": "quick-start.md"
-								},
-								{
-									"Title": "Authentication",
-									"Path": "authentication.md"
-								}
-							]
-						},
-						{
-							"Title": "Data Model",
-							"Children": [
-								{
-									"Title": "Leagues & Teams",
-									"Path": "leagues-teams.md"
-								},
-								{
-									"Title": "Players",
-									"Path": "players.md"
-								},
-								{
-									"Title": "Games & Scores",
-									"Path": "games.md"
-								},
-								{
-									"Title": "Standings",
-									"Path": "standings.md"
-								}
-							]
-						},
-						{
-							"Title": "API Reference",
-							"Path": "api.md"
-						},
-						{
-							"Title": "Real-Time",
-							"Children": [
-								{
-									"Title": "WebSocket Feed",
-									"Path": "websocket.md"
-								}
-							]
-						}
-					],
-					"DocFiles": [
-						"README.md",
-						"_brand.json",
-						"_sidebar.md",
-						"_topbar.md",
-						"api.md",
-						"authentication.md",
-						"cover.md",
-						"errorpage.md",
-						"games.md",
-						"leagues-teams.md",
-						"players.md",
-						"quick-start.md",
-						"standings.md",
-						"websocket.md"
-					]
-				},
-				{
-					"Name": "todo-app",
-					"Repo": "todo-app",
-					"Group": "example_applications",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": true,
-					"Sidebar": [
-						{
-							"Title": "Getting Started",
-							"Children": [
-								{
-									"Title": "Quick Start",
-									"Path": "quick-start.md"
-								},
-								{
-									"Title": "Configuration",
-									"Path": "configuration.md"
-								}
-							]
-						},
-						{
-							"Title": "Core Concepts",
-							"Children": [
-								{
-									"Title": "Tasks",
-									"Path": "tasks.md"
-								},
-								{
-									"Title": "Lists",
-									"Path": "lists.md"
-								},
-								{
-									"Title": "Tags & Filters",
-									"Path": "tags.md"
-								}
-							]
-						},
-						{
-							"Title": "API Reference",
-							"Path": "api.md"
-						},
-						{
-							"Title": "Media",
-							"Children": [
-								{
-									"Title": "Image Examples",
-									"Path": "images.md"
-								},
-								{
-									"Title": "Advanced Guide",
-									"Path": "guides/advanced.md"
-								}
-							]
-						}
-					],
-					"DocFiles": [
-						"README.md",
-						"_brand.json",
-						"_sidebar.md",
-						"_topbar.md",
-						"api.md",
-						"configuration.md",
-						"cover.md",
-						"errorpage.md",
-						"guides/advanced.md",
-						"images/task-icon.svg",
-						"images/test-diagram.svg",
-						"images.md",
-						"lists.md",
-						"quick-start.md",
-						"tags.md",
-						"tasks.md"
-					]
-				}
-			]
-		},
-		{
-			"Name": "Source",
-			"Key": "source",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "cli",
-					"Repo": "cli",
-					"Group": "source",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "providers",
-					"Repo": "providers",
-					"Group": "source",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "views",
-					"Repo": "views",
-					"Group": "source",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		},
-		{
-			"Name": "Test",
-			"Key": "test",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "sites",
-					"Repo": "sites",
-					"Group": "test",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		}
-	]
+	"Module": {
+		"Name": "pict-docuserve",
+		"Repo": "pict-docuserve",
+		"Group": "",
+		"Branch": "master",
+		"HasDocs": true,
+		"HasCover": true,
+		"Sidebar": [
+			{
+				"Title": "Getting Started",
+				"Children": [
+					{
+						"Title": "Quick Start",
+						"Path": "quick-start.md"
+					},
+					{
+						"Title": "Configuration",
+						"Path": "configuration.md"
+					}
+				]
+			},
+			{
+				"Title": "Core Concepts",
+				"Children": [
+					{
+						"Title": "Tasks",
+						"Path": "tasks.md"
+					},
+					{
+						"Title": "Lists",
+						"Path": "lists.md"
+					},
+					{
+						"Title": "Tags & Filters",
+						"Path": "tags.md"
+					}
+				]
+			},
+			{
+				"Title": "API Reference",
+				"Path": "api.md"
+			},
+			{
+				"Title": "Media",
+				"Children": [
+					{
+						"Title": "Image Examples",
+						"Path": "images.md"
+					},
+					{
+						"Title": "Advanced Guide",
+						"Path": "guides/advanced.md"
+					}
+				]
+			}
+		],
+		"DocFiles": [
+			".nojekyll",
+			"README.md",
+			"_brand.json",
+			"_cover.md",
+			"_sidebar.md",
+			"_topbar.md",
+			"_version.json",
+			"architecture.md",
+			"configuration.md",
+			"content-authoring.md",
+			"deployment.md",
+			"diagrams.md",
+			"example_applications/contacts-app/README.md",
+			"example_applications/contacts-app/_sidebar.md",
+			"example_applications/contacts-app/_topbar.md",
+			"example_applications/contacts-app/api.md",
+			"example_applications/contacts-app/configuration.md",
+			"example_applications/contacts-app/cover.md",
+			"example_applications/contacts-app/data-model.md",
+			"example_applications/contacts-app/errorpage.md",
+			"example_applications/contacts-app/quick-start.md",
+			"example_applications/contacts-app/relationships.md",
+			"example_applications/sports-stats-api/README.md",
+			"example_applications/sports-stats-api/_sidebar.md",
+			"example_applications/sports-stats-api/_topbar.md",
+			"example_applications/sports-stats-api/api.md",
+			"example_applications/sports-stats-api/authentication.md",
+			"example_applications/sports-stats-api/cover.md",
+			"example_applications/sports-stats-api/errorpage.md",
+			"example_applications/sports-stats-api/games.md",
+			"example_applications/sports-stats-api/leagues-teams.md",
+			"example_applications/sports-stats-api/players.md",
+			"example_applications/sports-stats-api/quick-start.md",
+			"example_applications/sports-stats-api/standings.md",
+			"example_applications/sports-stats-api/websocket.md",
+			"example_applications/todo-app/README.md",
+			"example_applications/todo-app/_sidebar.md",
+			"example_applications/todo-app/_topbar.md",
+			"example_applications/todo-app/api.md",
+			"example_applications/todo-app/configuration.md",
+			"example_applications/todo-app/cover.md",
+			"example_applications/todo-app/errorpage.md",
+			"example_applications/todo-app/lists.md",
+			"example_applications/todo-app/quick-start.md",
+			"example_applications/todo-app/tags.md",
+			"example_applications/todo-app/tasks.md",
+			"fable-playground.md",
+			"index.html",
+			"latex.md",
+			"pict-docuserve.min.js",
+			"playground-examples-upgrade-guide.md",
+			"retold-catalog.json",
+			"retold-keyword-index.json",
+			"README.md",
+			"_brand.json",
+			"_sidebar.md",
+			"_topbar.md",
+			"api.md",
+			"configuration.md",
+			"cover.md",
+			"data-model.md",
+			"errorpage.md",
+			"quick-start.md",
+			"relationships.md",
+			"README.md",
+			"_brand.json",
+			"_sidebar.md",
+			"_topbar.md",
+			"api.md",
+			"authentication.md",
+			"cover.md",
+			"errorpage.md",
+			"games.md",
+			"leagues-teams.md",
+			"players.md",
+			"quick-start.md",
+			"standings.md",
+			"websocket.md",
+			"README.md",
+			"_brand.json",
+			"_sidebar.md",
+			"_topbar.md",
+			"api.md",
+			"configuration.md",
+			"cover.md",
+			"errorpage.md",
+			"guides/advanced.md",
+			"images/task-icon.svg",
+			"images/test-diagram.svg",
+			"images.md",
+			"lists.md",
+			"quick-start.md",
+			"tags.md",
+			"tasks.md"
+		]
+	},
+	"Groups": []
 }
