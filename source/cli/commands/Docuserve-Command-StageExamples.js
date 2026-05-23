@@ -492,10 +492,10 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 		let tmpTitle = pExample.Flag.Title || tmpName;
 		let tmpSummary = pExample.Flag.Summary || pExample.Package.description || '';
 
-		// The writeup lives at docs/examples/<name>/README.md, so index.html
-		// is its sibling — a document-relative href docuserve resolves the
-		// same way it resolves the writeup's other links.
-		let tmpInner = `> **[&#9654; Launch the live app](index.html)** — runs in your browser, opens in a new tab.`;
+		// The launch link is a plain browser link the browser resolves against
+		// the docs-root index.html — so it carries the full docs-root-relative
+		// path and works from the writeup's folder or anywhere else.
+		let tmpInner = `> **[&#9654; Launch the live app](${mdSafeUrl('examples/' + tmpName + '/index.html')})** — runs in your browser, opens in a new tab.`;
 
 		let tmpText;
 		if (libFS.existsSync(tmpReadmePath))
@@ -539,9 +539,10 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 		let tmpRows = pStaged.map((pEx) =>
 		{
 			let tmpComplexity = escapeTableCell(pEx.Complexity) || '—';
-			// Both links are relative to this index (docs/examples/README.md),
-			// so they omit the examples/ segment.
-			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl(pEx.Name + '/README.md')}) | ${tmpComplexity} | ${escapeTableCell(pEx.Summary)} | [&#9654; Launch](${mdSafeUrl(pEx.Name + '/index.html')}) |`;
+			// The writeup is a .md SPA route resolved relative to this index;
+			// the launch link is a plain browser link carrying the full
+			// docs-root-relative path.
+			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl(pEx.Name + '/README.md')}) | ${tmpComplexity} | ${escapeTableCell(pEx.Summary)} | [&#9654; Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
 		});
 		let tmpInner = [
 			'| Example | Complexity | Summary | Live |',

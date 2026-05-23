@@ -36,8 +36,8 @@
 		"pict-section-code": "^1.0.11",
 		"pict-section-content": "^1.0.4",
 		"pict-section-histogram": "^1.0.1",
-		"pict-section-modal": "^1.1.1",
-		"pict-section-theme": "^1.0.5",
+		"pict-section-modal": "^1.1.3",
+		"pict-section-theme": "^1.0.6",
 		"pict-service-commandlineutility": "^1.0.19",
 		"pict-view": "^1.0.68"
 	},

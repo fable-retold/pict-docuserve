@@ -48,15 +48,13 @@ class DocuserveDocumentationProvider extends libPictProvider
 			let tmpIsModuleMode = (this.getDocsMode() === 'module');
 
 			// Built example applications (and other static .html pages) are
-			// served as plain files alongside the docs.  Link straight to
-			// them in a new tab rather than SPA-routing through #/page/.  In
-			// module mode the href is resolved against the current
-			// document's directory, exactly the way a .md link is — so every
-			// relative link in the docs shares one base.
+			// plain browser links opened in a new tab — the browser resolves
+			// them against the docs-root index.html, never the #/page/ hash.
+			// They must therefore carry the full docs-root-relative path, and
+			// are emitted exactly as authored regardless of the current page.
 			if (!tmpHref.match(/^[a-z][a-z0-9+.-]*:/i) && tmpHref.match(/\.html($|[?#])/i))
 			{
-				let tmpAssetHref = tmpIsModuleMode ? this._toModuleAssetHref(tmpHref, pCurrentDocPath) : tmpHref;
-				return { href: tmpAssetHref, target: '_blank', rel: 'noopener' };
+				return { href: tmpHref, target: '_blank', rel: 'noopener' };
 			}
 			// Convert internal doc links to hash routes
 			if (tmpHref.match(/^\//) || tmpHref.match(/^[^:]+\.md/))

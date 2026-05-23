@@ -363,8 +363,11 @@ class DocuserveCommandCheckLinks extends libCommandLineCommand
 		{
 			tmpHref = pTarget.replace(/^\/+/, '');
 		}
-		else
+		else if (!/\.html($|[?#])/i.test(pTarget))
 		{
+			// .md routes and other links resolve relative to the current
+			// document's directory; a .html link is a plain browser link the
+			// browser resolves against the docs-root index.html.
 			tmpBaseDir = libPath.relative(pDocsRoot, libPath.dirname(pCurrentFile)).split(libPath.sep).join('/');
 		}
 		let tmpResolved = libPath.join(pDocsRoot, resolveRelativeDocPath(tmpBaseDir, tmpHref));

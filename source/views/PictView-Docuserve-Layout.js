@@ -74,6 +74,20 @@ const _ViewConfiguration =
 		.pict-modal-shell-panel  { background: var(--theme-color-background-panel,   #FFFFFF); }
 		.pict-modal-shell-center { background: var(--theme-color-background-primary, #FDFBF7); }
 
+		/* Sidebar panel uses the secondary background so the chrome
+		   (panel surface AND the collapse tab that pokes out of it) match
+		   the inner #Docuserve-Sidebar-Container's secondary fill. Without
+		   this the panel is white-cream while the inner is darker-cream,
+		   and the collapse tab — which inherits its background from
+		   --pict-modal-bg — looks like a foreign sliver hanging off the
+		   wrong-colored panel. Overriding --pict-modal-bg also retints the
+		   tab's merge-bar box-shadow so the join is invisible. */
+		.pict-modal-shell-panel-left
+		{
+			--pict-modal-bg: var(--theme-color-background-secondary, #FAF7F1);
+			background: var(--theme-color-background-secondary, #FAF7F1);
+		}
+
 		/* Center workspace — content / splash / search views write into
 		   #Docuserve-Content-Container which the shell provisions as the
 		   center destination. */

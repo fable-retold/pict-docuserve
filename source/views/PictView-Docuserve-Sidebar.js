@@ -22,9 +22,19 @@ const _ViewConfiguration =
 			transition: background-color 0.15s ease;
 		}
 		.docuserve-sidebar-header {
-			display: flex;
+			display: none;
 			justify-content: flex-end;
 			padding: 0.4em 0.5em 0;
+		}
+		/* The "X" close button is only useful when the sidebar is acting
+		   as a responsive drawer (narrow viewports where the panel slid
+		   in over the content area). In docked desktop mode the
+		   pict-section-modal collapse tab on the panel's outer edge is
+		   the canonical collapse affordance — a second X inside the
+		   panel competes with it and looks messy. Show the X only in
+		   drawer mode. */
+		.pict-modal-shell-panel-drawer .docuserve-sidebar-header {
+			display: flex;
 		}
 		.docuserve-sidebar-close {
 			display: inline-flex;
