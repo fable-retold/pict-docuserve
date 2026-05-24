@@ -23,6 +23,7 @@ const libViewContent      = require('./views/PictView-Docuserve-Content.js');
 const libViewSearch       = require('./views/PictView-Docuserve-Search.js');
 const libViewDemo         = require('./views/PictView-Docuserve-Demo.js');
 const libViewFablePlayground = require('./views/PictView-Docuserve-Fable-Playground.js');
+const libViewSectionPlayground = require('./views/PictView-Docuserve-Section-Playground.js');
 
 class DocuserveApplication extends libPictApplication
 {
@@ -55,6 +56,7 @@ class DocuserveApplication extends libPictApplication
 		this.pict.addView('Docuserve-Search',       libViewSearch.default_configuration,       libViewSearch);
 		this.pict.addView('Docuserve-Demo',         libViewDemo.default_configuration,         libViewDemo);
 		this.pict.addView('Docuserve-Fable-Playground', libViewFablePlayground.default_configuration, libViewFablePlayground);
+		this.pict.addView('Docuserve-Section-Playground', libViewSectionPlayground.default_configuration, libViewSectionPlayground);
 
 		// Theme-Section is added later from onAfterInitializeAsync, after
 		// the brand has been resolved.  Docuserve is a viewer — the docs
@@ -288,10 +290,23 @@ class DocuserveApplication extends libPictApplication
 			return;
 		}
 
-		// #/playground/<kind> — live editor + sandbox for trying Fable
-		// (eventually Pict too).
+		// #/playground/<kind> — live editor + sandbox.  Three shapes:
+		//   #/playground/fable                       — Fable JS REPL (bottom drawer)
+		//   #/playground/section                     — section playground for the
+		//                                              current module (standalone-mode
+		//                                              docs site)
+		//   #/playground/section/<group>/<module>    — section playground for a
+		//                                              specific module (catalog-mode
+		//                                              docs site serving multiple)
 		if (tmpParts[0] === 'playground' && tmpParts.length >= 2)
 		{
+			if (tmpParts[1] === 'section')
+			{
+				let tmpGroup  = (tmpParts.length >= 4) ? tmpParts[2] : (this.pict.AppData.Docuserve.CurrentGroup || '');
+				let tmpModule = (tmpParts.length >= 4) ? tmpParts[3] : (this.pict.AppData.Docuserve.CurrentModule || '');
+				this.navigateToSectionPlayground(tmpGroup, tmpModule);
+				return;
+			}
 			this.navigateToPlayground(tmpParts[1]);
 			return;
 		}
@@ -375,6 +390,55 @@ class DocuserveApplication extends libPictApplication
 	}
 
 	/**
+	 * Open the section playground for `<group>/<module>`.  Unlike the
+	 * Fable playground (which lives in the bottom drawer), the section
+	 * playground takes over the main content area — it needs full
+	 * vertical space for its four editor tabs + iframe pane.
+	 *
+	 * @param {string} pGroup
+	 * @param {string} pModule
+	 */
+	navigateToSectionPlayground(pGroup, pModule)
+	{
+		this.pict.AppData.Docuserve.CurrentGroup  = pGroup;
+		this.pict.AppData.Docuserve.CurrentModule = pModule;
+		this.pict.AppData.Docuserve.CurrentDemo   = '';
+		this.pict.AppData.Docuserve.CurrentPath   = 'section-playground';
+
+		// Hide the bottom playground drawer — the section playground
+		// is the whole show on this route.
+		let tmpLayout = this.pict.views['Docuserve-Layout'];
+		if (tmpLayout && typeof tmpLayout.setPlaygroundEnabled === 'function')
+		{
+			tmpLayout.setPlaygroundEnabled(false);
+		}
+
+		let tmpPlayground = this.pict.views['Docuserve-Section-Playground'];
+		if (!tmpPlayground || typeof tmpPlayground.openPlayground !== 'function')
+		{
+			let tmpContentView = this.pict.views['Docuserve-Content'];
+			if (tmpContentView && typeof tmpContentView.displayContent === 'function')
+			{
+				tmpContentView.render();
+				tmpContentView.displayContent('<h1>Section playground unavailable</h1><p>The Section Playground view is not registered.</p>');
+			}
+			return;
+		}
+		tmpPlayground.openPlayground(pGroup, pModule);
+
+		// Keep the sidebar in sync — show the module's nav + active item.
+		let tmpSidebarView = this.pict.views['Docuserve-Sidebar'];
+		if (tmpSidebarView)
+		{
+			tmpSidebarView.renderSidebarGroups();
+			if (typeof tmpSidebarView.renderModuleNav === 'function')
+			{
+				tmpSidebarView.renderModuleNav(pGroup, pModule);
+			}
+		}
+	}
+
+	/**
 	 * Navigate to a hash route.
 	 *
 	 * Sets window.location.hash, which triggers the hashchange listener in the
@@ -433,12 +497,16 @@ class DocuserveApplication extends libPictApplication
 				? ('JS Playground: ' + tmpModule)
 				: 'JS Playground');
 		}
-		// Load the module's _playground.json (cached after first load).
-		// Stash the config in AppData so the playground view's require
-		// shim and the per-run capture logic can consult it.  We don't
-		// gate the playground on the config landing — it's purely
-		// informative right now since all fable modules are bundled.
-		if (tmpEnabled && tmpDoc && typeof tmpDoc.loadPlaygroundConfig === 'function')
+		// Load the module's _playground.json.  Two reasons to always do
+		// this (regardless of tmpEnabled):
+		//   1. The async `Kind` check inside isPlaygroundEnabled needs
+		//      the cache populated.  If the config declares Kind:
+		//      "section", we have to re-call setPlaygroundEnabled(false)
+		//      to hide the Fable drawer that the sync sidebar-based
+		//      check just turned on.
+		//   2. Apps still consult AppData.Docuserve.Playground.Config
+		//      (DOM-sandbox pane visibility etc.).
+		if (tmpDoc && typeof tmpDoc.loadPlaygroundConfig === 'function')
 		{
 			tmpDoc.loadPlaygroundConfig(tmpGroup, tmpModule).then((pConfig) =>
 			{
@@ -447,6 +515,16 @@ class DocuserveApplication extends libPictApplication
 					this.pict.AppData.Docuserve.Playground = {};
 				}
 				this.pict.AppData.Docuserve.Playground.Config = pConfig || null;
+
+				// Re-evaluate the drawer's enabled state now that the
+				// cache is populated — a Kind: "section" config flips
+				// it from true back to false.
+				if (typeof tmpDoc.isPlaygroundEnabled === 'function')
+				{
+					let tmpReEnabled = tmpDoc.isPlaygroundEnabled(tmpGroup, tmpModule);
+					tmpLayout.setPlaygroundEnabled(tmpReEnabled);
+				}
+
 				// Config controls DOM-sandbox pane visibility; let the
 				// playground view re-evaluate the moment it lands.  No-op
 				// if the view hasn't been mounted yet.
@@ -456,18 +534,6 @@ class DocuserveApplication extends libPictApplication
 					tmpPlaygroundView._applySandboxMode();
 				}
 			});
-		}
-		else
-		{
-			if (this.pict.AppData.Docuserve.Playground)
-			{
-				this.pict.AppData.Docuserve.Playground.Config = null;
-			}
-			let tmpPlaygroundView = this.pict.views['Docuserve-Fable-Playground'];
-			if (tmpPlaygroundView && typeof tmpPlaygroundView._applySandboxMode === 'function')
-			{
-				tmpPlaygroundView._applySandboxMode();
-			}
 		}
 	}
 

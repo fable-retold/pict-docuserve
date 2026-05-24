@@ -1617,18 +1617,24 @@ class DocuserveDocumentationProvider extends libPictProvider
 	}
 
 	/**
-	 * Decide whether the playground panel should be enabled for the
-	 * given group/module.
+	 * Decide whether the **Fable bottom-drawer** playground panel should
+	 * be enabled for the given group/module.
 	 *
-	 * Opt-in signal: a module's `_sidebar.md` (baked into the catalog as
-	 * `module.Sidebar`) contains an entry whose Path matches
-	 * `playground.md` (case-insensitive, anywhere in the tree).  When the
-	 * sidebar contains that entry, code blocks in the module's docs get
-	 * the "Try in Playground" button and the bottom drawer/tab strip
-	 * becomes visible; otherwise the drawer is suppressed entirely.
+	 * Resolution order:
+	 *   1. If `_playground.json` is cached AND its `Kind` is `"section"`,
+	 *      return false.  Section-playground modules use the full-page
+	 *      `#/playground/section` route and explicitly do NOT want the
+	 *      Fable JS REPL drawer popping up on every doc page.
+	 *   2. Otherwise the opt-in signal is a `playground.md` entry in the
+	 *      module's sidebar (catalog mode) or the root SidebarGroups
+	 *      (standalone mode).  Presence of that entry → drawer + tab
+	 *      strip + "Try in Playground" buttons on code blocks.
 	 *
-	 * Falls back to the root SidebarGroups (standalone mode — docuserve
-	 * serving a single module's docs directly without a catalog).
+	 * The cache is populated by `loadPlaygroundConfig()` (called on each
+	 * navigation by `_syncPlaygroundVisibility`).  On the first visit to
+	 * a module, the cache may not yet be populated — this method
+	 * conservatively falls through to the sidebar check, and the caller
+	 * re-invokes once the async config load resolves.
 	 *
 	 * @param {string} [pGroup]  - Current group key (may be empty)
 	 * @param {string} [pModule] - Current module name (may be empty)
@@ -1636,6 +1642,20 @@ class DocuserveDocumentationProvider extends libPictProvider
 	 */
 	isPlaygroundEnabled(pGroup, pModule)
 	{
+		// Check the _playground.json cache for an explicit Kind: 'section'
+		// declaration — that module uses the full-page playground and
+		// the Fable drawer must stay out of its way on every doc page,
+		// not just on the playground route itself.
+		let tmpCacheKey = (pGroup || '') + '/' + (pModule || '');
+		if (Object.prototype.hasOwnProperty.call(this._PlaygroundConfigCache, tmpCacheKey))
+		{
+			let tmpConfig = this._PlaygroundConfigCache[tmpCacheKey];
+			if (tmpConfig && tmpConfig.Kind === 'section')
+			{
+				return false;
+			}
+		}
+
 		// Per-module sidebar (catalog mode).
 		if (pGroup && pModule)
 		{
