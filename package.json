@@ -14,9 +14,7 @@
 	"scripts": {
 		"start": "node source/cli/Docuserve-CLI-Run.js serve",
 		"brand": "node node_modules/pict-section-theme/bin/pict-section-theme-brand.js --manifest ../../../Retold-Modules-Manifest.json --module pict-docuserve",
-		"prebuild": "npm run brand",
 		"build": "npx quack build && npx quack copy",
-		"prebuild-docs": "npm run brand",
 		"build-docs": "npx quack build && npx quack copy && node source/cli/Docuserve-CLI-Run.js inject ./docs && node example_applications/build-examples.js stage-docs",
 		"serve-docs": "node source/cli/Docuserve-CLI-Run.js serve ./docs",
 		"serve-examples": "node example_applications/build-examples.js",
