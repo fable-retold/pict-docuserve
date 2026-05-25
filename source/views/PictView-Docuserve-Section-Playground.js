@@ -397,11 +397,54 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		ApplicationGlobal:  'PictFormApplication',
 		ApplicationModule:  'PictSectionForm',
 		ManifestKey:        'DefaultFormManifest',
-		// Imports — each one is { Name, Source: 'cdn'|'bundled', Version? }.
-		// For section playgrounds, every Import is loaded as a CDN <script>
-		// tag.  The order matters: pict first, then anything that depends on
-		// it, then the section module last.
-		Imports: []
+		// WrapperKind controls whether the resolved class is treated as a
+		// PictApplication subclass (default) or as a PictView subclass that
+		// the bootstrap will wrap in a synthesized PictApplication.
+		//   - "application": `window[ApplicationModule][ApplicationGlobal]`
+		//      already IS the PictApplication.  (pict-section-form's pattern.)
+		//   - "view":        the resolved class is a PictView; the bootstrap
+		//      synthesizes a wrapper PictApplication that registers it under
+		//      `ViewName` with config from `pictConfig[ViewConfigKey]`.  This
+		//      is the path most UI-control modules take — they ship a view,
+		//      not an application, and don't need to author a wrapper class.
+		WrapperKind:        'application',
+		ViewName:           'Section-Playground-View',
+		ViewConfigKey:      'ViewConfig',
+		// Optional DOM id where the section should mount.  When set, the
+		// iframe template includes <div id="<MountID>"></div> next to the
+		// default #Section-Playground-Mount, AND the wrapper-synthesizer's
+		// auto-target uses it instead of #Section-Playground-Mount.  Lets
+		// sections whose DefaultDestinationAddress doesn't already match
+		// either the iframe slots or #Section-Playground-Mount declare
+		// their own ID without overriding Renderables by hand.
+		MountID:            '',
+		// Optional method on the view to call once after initialization
+		// with seeded data.  Use this for sections whose data is loaded
+		// imperatively (e.g. pict-editor-timeline's `loadStoryboard`,
+		// pict-section-equation's `setSolveResult`) rather than via a
+		// `<X>DataAddress` config option.  The value at
+		// `BootstrapSeedAddress` (in `pict.AppData`) is the argument.
+		BootstrapMethod:        '',
+		BootstrapSeedAddress:   '',
+		// Imports — each one is { Name, Source: 'cdn'|'bundled'|'local'|'esm', Version?, Path?, URL?, GlobalName?, ExportName? }.
+		// Loading shapes:
+		//   cdn   — <script src="https://cdn.jsdelivr.net/npm/<Name>@<Version>/dist/<Name>.min.js"></script>
+		//   local — <script src="<Path>"></script>; Path resolves against the docs root
+		//   esm   — <script type="module">import { <ExportName> } from "<URL>"; window["<GlobalName>"] = <ExportName>;</script>
+		//           Use for ES-module-only packages (CodeJar 4.x, etc.) that
+		//           can't be loaded via plain <script src>.  Bootstrap waits
+		//           on `window.<GlobalName>` before running the application.
+		// Order matters: pict first, then anything that depends on it
+		// (pict-application before any wrapper that needs synthesis),
+		// then the section module last.
+		Imports: [],
+		// Stylesheets — each is { Source: 'cdn'|'local', Name?, Version?, Path? }.
+		// Emitted as <link rel="stylesheet"> tags in the iframe head.  Used by
+		// sections that wrap external libraries with CSS (Toast UI Grid, KaTeX,
+		// Mermaid pre-styled themes, …) so module authors don't have to inject
+		// <link> tags from Application Code.  Local sources are staged by the
+		// `stage-playground` command alongside Imports.
+		Stylesheets: []
 	};
 
 	let tmpSpec = Object.assign({}, tmpDefaults, pSpec || {});
@@ -417,15 +460,30 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		{ Name: 'pict-section-theme',   Source: 'cdn' }
 	];
 
-	// Build <script src=...> tags for every Import.  Two sources:
+	// Build script + stylesheet tags for every Import / Stylesheet.
+	//
+	// Imports — four sources:
 	//   cdn   — jsDelivr URL built from Name + Version
 	//   local — Path relative to the docs root (resolved via <base href> tag
 	//           we emit below, so the iframe's about:srcdoc origin doesn't
 	//           break relative paths)
+	//   esm   — ES-module dynamic import emitted as <script type="module">; the
+	//           bootstrap waits on `window[GlobalName]` before running the app.
+	//   bundled — legacy alias, treated as cdn for compatibility.
+	//
+	// Stylesheets — same Source values minus 'esm' (CSS has no ESM concept).
 	let tmpScriptTags = '';
+	let tmpESMImports = [];
 	for (let i = 0; i < tmpImports.length; i++)
 	{
 		let tmpImport = tmpImports[i];
+		if (tmpImport.Source === 'esm')
+		{
+			// Defer to a single coalesced <script type="module"> at the
+			// bottom so we can wait on all ESM globals before app init.
+			tmpESMImports.push(tmpImport);
+			continue;
+		}
 		let tmpSrc;
 		if (tmpImport.Source === 'local')
 		{
@@ -438,6 +496,58 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 				+ '/dist/' + tmpImport.Name + '.min.js';
 		}
 		tmpScriptTags += '<script src="' + tmpSrc + '"></script>\n';
+	}
+
+	// Stylesheet <link> tags — emitted into <head> before the script tags so
+	// the section's first paint already has its external styles applied.
+	let tmpStylesheets = Array.isArray(tmpSpec.Stylesheets) ? tmpSpec.Stylesheets : [];
+	let tmpLinkTags = '';
+	for (let i = 0; i < tmpStylesheets.length; i++)
+	{
+		let tmpStyle = tmpStylesheets[i];
+		let tmpHref;
+		if (tmpStyle.Source === 'local')
+		{
+			tmpHref = tmpStyle.Path;
+		}
+		else
+		{
+			let tmpVersion = tmpStyle.Version || '1';
+			let tmpStylePath = tmpStyle.Path || ('dist/' + tmpStyle.Name + '.min.css');
+			tmpHref = 'https://cdn.jsdelivr.net/npm/' + tmpStyle.Name + '@' + tmpVersion + '/' + tmpStylePath;
+		}
+		tmpLinkTags += '<link rel="stylesheet" href="' + tmpHref + '">\n';
+	}
+
+	// ESM imports — coalesced into one <script type="module"> that imports
+	// each module, stamps the named export onto window[GlobalName], and
+	// signals readiness via a single flag the bootstrap waits on.
+	let tmpESMScript = '';
+	if (tmpESMImports.length > 0)
+	{
+		tmpESMScript += '<script type="module">\n';
+		tmpESMScript += 'window.__SectionPlaygroundESMReady = (async () => {\n';
+		for (let i = 0; i < tmpESMImports.length; i++)
+		{
+			let tmpESM = tmpESMImports[i];
+			let tmpURL = tmpESM.URL;
+			if (!tmpURL && tmpESM.Name)
+			{
+				let tmpVersion = tmpESM.Version || '1';
+				tmpURL = 'https://cdn.jsdelivr.net/npm/' + tmpESM.Name + '@' + tmpVersion + '/dist/' + tmpESM.Name + '.min.js';
+			}
+			let tmpExportName = tmpESM.ExportName || tmpESM.GlobalName || tmpESM.Name;
+			let tmpGlobalName = tmpESM.GlobalName || tmpESM.ExportName || tmpESM.Name;
+			tmpESMScript += '  try {\n';
+			tmpESMScript += '    const mod = await import(' + JSON.stringify(tmpURL) + ');\n';
+			tmpESMScript += '    window[' + JSON.stringify(tmpGlobalName) + '] = mod[' + JSON.stringify(tmpExportName) + '] || mod.default || mod;\n';
+			tmpESMScript += '  } catch (err) {\n';
+			tmpESMScript += '    console.error("ESM import failed for " + ' + JSON.stringify(tmpURL) + ', err);\n';
+			tmpESMScript += '    throw err;\n';
+			tmpESMScript += '  }\n';
+		}
+		tmpESMScript += '})();\n';
+		tmpESMScript += '</script>\n';
 	}
 
 	// Caller passes an absolute base URL so local Imports + asset paths
@@ -462,6 +572,13 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 	let tmpAppConfigJSON  = encode(pConfig.appConfig);
 	let tmpAppDataJSON    = encode(pConfig.appData);
 
+	// Application Code editor — optional raw JS that runs as the body
+	// of a function `(Base) => class`.  Encoded as a JSON string so it
+	// survives the srcdoc round-trip; the iframe wraps it with
+	// `new Function('Base', source)` and expects a class back.
+	let tmpApplicationJS = (typeof pConfig.application === 'string') ? pConfig.application : '';
+	let tmpApplicationJSON = JSON.stringify(tmpApplicationJS).replace(/<\/script>/g, '<\\/script>');
+
 	// HTML.  Theme picker is rendered into a slim topbar inside the iframe
 	// so the user can switch themes without leaving the page.  The section
 	// itself mounts into the main content div below it.
@@ -481,7 +598,9 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		+ '  #playground-error { display: none; padding: 14px 18px; background: #FFF4F2; color: #B43A2E; border-bottom: 1px solid #B43A2E; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; white-space: pre-wrap; }\n'
 		+ '  #playground-error.show { display: block; }\n'
 		+ '</style>\n'
+		+ tmpLinkTags
 		+ tmpScriptTags
+		+ tmpESMScript
 		+ '</head>\n'
 		+ '<body>\n'
 		+ '<div id="playground-error"></div>\n'
@@ -498,6 +617,7 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		+ '  <!-- Other section types may use a different default; the spec drives the markup. -->\n'
 		+ '  <div id="Pict-Form-Container"></div>\n'
 		+ '  <div id="Section-Playground-Mount"></div>\n'
+		+ (tmpSpec.MountID ? '  <div id="' + tmpSpec.MountID + '"></div>\n' : '')
 		+ '</div>\n'
 		+ '<script>\n'
 		+ '(function() {\n'
@@ -505,10 +625,17 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		+ '  var pictConfig = ' + tmpPictConfigJSON + ';\n'
 		+ '  var appConfig  = ' + tmpAppConfigJSON + ';\n'
 		+ '  var appData    = ' + tmpAppDataJSON + ';\n'
+		+ '  var applicationSource = ' + tmpApplicationJSON + ';\n'
 		+ '  var sectionType        = ' + JSON.stringify(tmpSpec.SectionType) + ';\n'
 		+ '  var applicationModule  = ' + JSON.stringify(tmpSpec.ApplicationModule) + ';\n'
 		+ '  var applicationGlobal  = ' + JSON.stringify(tmpSpec.ApplicationGlobal) + ';\n'
 		+ '  var manifestKey        = ' + JSON.stringify(tmpSpec.ManifestKey) + ';\n'
+		+ '  var wrapperKind        = ' + JSON.stringify(tmpSpec.WrapperKind) + ';\n'
+		+ '  var viewName           = ' + JSON.stringify(tmpSpec.ViewName) + ';\n'
+		+ '  var viewConfigKey      = ' + JSON.stringify(tmpSpec.ViewConfigKey) + ';\n'
+		+ '  var mountID            = ' + JSON.stringify(tmpSpec.MountID) + ';\n'
+		+ '  var bootstrapMethod    = ' + JSON.stringify(tmpSpec.BootstrapMethod) + ';\n'
+		+ '  var bootstrapSeedAddr  = ' + JSON.stringify(tmpSpec.BootstrapSeedAddress) + ';\n'
 		+ '\n'
 		+ '  function showError(msg) {\n'
 		+ '    var el = document.getElementById("playground-error");\n'
@@ -521,27 +648,118 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		+ '    else { document.addEventListener("DOMContentLoaded", fn); }\n'
 		+ '  }\n'
 		+ '\n'
+		+ '  function awaitESM() {\n'
+		+ '    return (window.__SectionPlaygroundESMReady && typeof window.__SectionPlaygroundESMReady.then === "function")\n'
+		+ '      ? window.__SectionPlaygroundESMReady\n'
+		+ '      : Promise.resolve();\n'
+		+ '  }\n'
+		+ '\n'
 		+ '  ready(function() {\n'
-		+ '    try {\n'
+		+ '   awaitESM().then(function() { try {\n'
 		+ '      if (typeof Pict === "undefined") { throw new Error("pict bundle did not load — check the CDN imports in _playground.json"); }\n'
 		+ '      var libSectionModule = window[applicationModule];\n'
 		+ '      if (!libSectionModule) { throw new Error("Section module " + applicationModule + " is not loaded; check the Imports in _playground.json"); }\n'
-		+ '      var ApplicationClass = libSectionModule[applicationGlobal] || libSectionModule;\n'
-		+ '      if (typeof ApplicationClass !== "function") { throw new Error("Could not resolve " + applicationGlobal + " on " + applicationModule); }\n'
+		+ '      var ResolvedClass = libSectionModule[applicationGlobal] || libSectionModule;\n'
+		+ '      if (typeof ResolvedClass !== "function") { throw new Error("Could not resolve " + applicationGlobal + " on " + applicationModule); }\n'
 		+ '\n'
-		+ '      // Subclass via ES6 class extends — ApplicationClass is\n'
-		+ '      // (in modern builds) a real class, which throws if invoked\n'
-		+ '      // via .call() without new.  class extends handles both ES6\n'
-		+ '      // classes and old-style prototype constructors.\n'
-		+ '      class PlaygroundApplication extends ApplicationClass {}\n'
+		+ '      // Wrapper resolution.  Two paths:\n'
+		+ '      //   1. WrapperKind: "application" (default) — the resolved class\n'
+		+ '      //      is already a PictApplication subclass; use it directly.\n'
+		+ '      //      pict-section-form\'s pattern.\n'
+		+ '      //   2. WrapperKind: "view" — the resolved class is a PictView; the\n'
+		+ '      //      bootstrap synthesizes a PictApplication subclass that\n'
+		+ '      //      registers the view under `viewName` with config drawn\n'
+		+ '      //      from pictConfig[viewConfigKey].  This is the no-wrapper\n'
+		+ '      //      path: section modules ship just their view class and a\n'
+		+ '      //      _playground.json — no per-module Application file needed.\n'
+		+ '      var BaseApplicationClass;\n'
+		+ '      if (wrapperKind === "view") {\n'
+		+ '        if (typeof window.PictApplication !== "function") { throw new Error("WrapperKind: \\"view\\" requires pict-application to be loaded — add it to Imports in _playground.json"); }\n'
+		+ '        var ViewClass = ResolvedClass;\n'
+		+ '        // PictApplication is an ES6 class, so the wrapper MUST be one\n'
+		+ '        // too — ES6 classes throw "cannot be invoked without new" when\n'
+		+ '        // called via `.call(this, ...)`, so the prototype-style pattern\n'
+		+ '        // (function + Object.create) silently fails at construction.\n'
+		+ '        // Build the class via a Function constructor so we can keep\n'
+		+ '        // closure access to viewName / viewConfigKey / mountID / etc.\n'
+		+ '        var BuildWrapperClass = new Function(\n'
+		+ '          "PictApplication", "ViewClass", "pictConfig", "viewName", "viewConfigKey", "mountID", "bootstrapMethod", "bootstrapSeedAddr",\n'
+		+ '          "return class ViewWrapperApplication extends PictApplication {"\n'
+		+ '          + "  constructor(pFable, pOptions, pServiceHash) {"\n'
+		+ '          + "    super(pFable, pOptions, pServiceHash);"\n'
+		+ '          + "    var tmpDefaultViewConfig = (ViewClass.default_configuration || {});"\n'
+		+ '          + "    var tmpInjectedViewConfig = (pictConfig && pictConfig[viewConfigKey]) || {};"\n'
+		+ '          + "    var tmpMergedViewConfig = Object.assign({}, tmpDefaultViewConfig, tmpInjectedViewConfig);"\n'
+		+ '          + "    var tmpAutoMount = \\"#\\" + (mountID || \\"Section-Playground-Mount\\");"\n'
+		+ '          + "    if (typeof tmpInjectedViewConfig.DefaultDestinationAddress === \\"undefined\\") {"\n'
+		+ '          + "      tmpMergedViewConfig.DefaultDestinationAddress = tmpAutoMount;"\n'
+		+ '          + "      if (Array.isArray(tmpDefaultViewConfig.Renderables)) {"\n'
+		+ '          + "        tmpMergedViewConfig.Renderables = tmpDefaultViewConfig.Renderables.map(function(pRenderable) {"\n'
+		+ '          + "          return Object.assign({}, pRenderable, { DestinationAddress: tmpAutoMount });"\n'
+		+ '          + "        });"\n'
+		+ '          + "      }"\n'
+		+ '          + "    }"\n'
+		+ '          + "    this.pict.addView(viewName, tmpMergedViewConfig, ViewClass);"\n'
+		+ '          + "  }"\n'
+		+ '          + "  onAfterInitialize() {"\n'
+		+ '          + "    super.onAfterInitialize();"\n'
+		+ '          + "    var tmpView = this.pict.views[viewName];"\n'
+		+ '          + "    if (bootstrapMethod && tmpView && typeof tmpView[bootstrapMethod] === \\"function\\") {"\n'
+		+ '          + "      try {"\n'
+		+ '          + "        var tmpSeed;"\n'
+		+ '          + "        if (bootstrapSeedAddr && this.pict && this.pict.manifest && typeof this.pict.manifest.getValueByHash === \\"function\\") {"\n'
+		+ '          + "          tmpSeed = this.pict.manifest.getValueByHash(this.pict.AppData, bootstrapSeedAddr);"\n'
+		+ '          + "        }"\n'
+		+ '          + "        tmpView[bootstrapMethod](tmpSeed);"\n'
+		+ '          + "      } catch (seedErr) { console.warn(\\"BootstrapMethod \\" + bootstrapMethod + \\" threw:\\", seedErr); }"\n'
+		+ '          + "    }"\n'
+		+ '          + "    if (tmpView && typeof tmpView.render === \\"function\\") { tmpView.render(); }"\n'
+		+ '          + "  }"\n'
+		+ '          + "};"\n'
+		+ '        );\n'
+		+ '        BaseApplicationClass = BuildWrapperClass(window.PictApplication, ViewClass, pictConfig, viewName, viewConfigKey, mountID, bootstrapMethod, bootstrapSeedAddr);\n'
+		+ '        // Carry through whatever defaults the view itself ships, so\n'
+		+ '        // pict_configuration / Product / Hash stay sensible if the\n'
+		+ '        // user has not provided their own appConfig / pictConfig.\n'
+		+ '        BaseApplicationClass.default_configuration = (ViewClass.default_configuration && ViewClass.default_configuration.pict_configuration)\n'
+		+ '          ? ViewClass.default_configuration\n'
+		+ '          : { pict_configuration: {} };\n'
+		+ '      } else {\n'
+		+ '        BaseApplicationClass = ResolvedClass;\n'
+		+ '      }\n'
 		+ '\n'
-		+ '      // Merge user-supplied pict_configuration onto the section\'s default.\n'
-		+ '      var basePict = (ApplicationClass.default_configuration && ApplicationClass.default_configuration.pict_configuration) || {};\n'
-		+ '      var mergedPict = Object.assign({}, basePict, pictConfig);\n'
+		+ '      // Subclass.  If the user supplied Application Code,\n'
+		+ '      // wrap it as `function (Base) { ...userBody... }` and\n'
+		+ '      // expect it to return a class.  Otherwise fall back to\n'
+		+ '      // a no-op extends-Base subclass.  class extends handles\n'
+		+ '      // both ES6 classes and old-style prototype constructors.\n'
+		+ '      var PlaygroundApplication;\n'
+		+ '      if (typeof applicationSource === "string" && applicationSource.trim().length > 0) {\n'
+		+ '        try {\n'
+		+ '          var customizerFn = new Function("Base", applicationSource);\n'
+		+ '          var customizerResult = customizerFn(BaseApplicationClass);\n'
+		+ '          if (typeof customizerResult !== "function") {\n'
+		+ '            throw new Error("Application Code must `return` a class.  Got " + (typeof customizerResult) + ".");\n'
+		+ '          }\n'
+		+ '          PlaygroundApplication = customizerResult;\n'
+		+ '        } catch (customizerErr) {\n'
+		+ '          throw new Error("Application Code error: " + (customizerErr && customizerErr.message ? customizerErr.message : customizerErr));\n'
+		+ '        }\n'
+		+ '      } else {\n'
+		+ '        PlaygroundApplication = class extends BaseApplicationClass {};\n'
+		+ '      }\n'
+		+ '\n'
+		+ '      // Precedence: Base class defaults < user-class defaults\n'
+		+ '      // (if Application Code set its own) < the four editor tabs.\n'
+		+ '      // The editor tabs are what the playground exists to drive,\n'
+		+ '      // so they always win.\n'
+		+ '      var userDefault = PlaygroundApplication.default_configuration || BaseApplicationClass.default_configuration || {};\n'
+		+ '      var basePict    = userDefault.pict_configuration || {};\n'
+		+ '      var mergedPict  = Object.assign({}, basePict, pictConfig);\n'
 		+ '      mergedPict[manifestKey] = manifest;\n'
 		+ '      if (appData !== undefined) { mergedPict.DefaultAppData = appData; }\n'
 		+ '\n'
-		+ '      var defaultConfig = Object.assign({}, ApplicationClass.default_configuration || {}, appConfig);\n'
+		+ '      var defaultConfig = Object.assign({}, userDefault, appConfig);\n'
 		+ '      defaultConfig.pict_configuration = mergedPict;\n'
 		+ '      PlaygroundApplication.default_configuration = defaultConfig;\n'
 		+ '\n'
@@ -565,7 +783,9 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		+ '      });\n'
 		+ '    } catch (err) {\n'
 		+ '      showError(String(err && err.stack ? err.stack : err));\n'
-		+ '    }\n'
+		+ '    } }).catch(function(esmErr) {\n'
+		+ '      showError("ESM import failed: " + String(esmErr && esmErr.message ? esmErr.message : esmErr));\n'
+		+ '    });\n'
 		+ '  });\n'
 		+ '}());\n'
 		+ '</script>\n'

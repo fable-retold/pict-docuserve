@@ -32,7 +32,7 @@
 		"pict-application": "^1.0.34",
 		"pict-provider": "^1.0.13",
 		"pict-section-code": "^1.0.11",
-		"pict-section-content": "^1.0.4",
+		"pict-section-content": "^1.0.5",
 		"pict-section-histogram": "^1.0.1",
 		"pict-section-modal": "^1.1.4",
 		"pict-section-theme": "^1.0.6",
@@ -40,8 +40,8 @@
 		"pict-view": "^1.0.68"
 	},
 	"devDependencies": {
-		"pict-docuserve": "^1.4.0",
-		"quackage": "^1.2.4"
+		"pict-docuserve": "^1.4.1",
+		"quackage": "^1.2.5"
 	},
 	"copyFilesSettings": {
 		"whenFileExists": "overwrite"

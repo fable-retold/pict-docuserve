@@ -13,6 +13,7 @@ let _PictCLIProgram = new libCLIProgram(
 		require('./commands/Docuserve-Command-Inject.js'),
 		require('./commands/Docuserve-Command-PrepareLocal.js'),
 		require('./commands/Docuserve-Command-StageExamples.js'),
+		require('./commands/Docuserve-Command-StagePlayground.js'),
 		require('./commands/Docuserve-Command-CheckLinks.js')
 	]);
 

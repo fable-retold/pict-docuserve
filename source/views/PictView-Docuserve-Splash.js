@@ -227,11 +227,65 @@ class DocusserveSplashView extends libPictView
 			this.renderFromCatalog(tmpDocuserve);
 		}
 
+		// Conditionally append a "Playground" button to the action row when
+		// the current module ships a _playground.json.  Async — the button
+		// pops in once the config resolves.
+		this.renderPlaygroundButton();
+
 		// Render docs/README.md beneath the hero — the splash fills the
 		// viewport above the fold, the README content follows on scroll.
 		this.renderReadme();
 
 		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
+	}
+
+	/**
+	 * Append a "Playground" button to the splash action row when the
+	 * current module declares a playground in `_playground.json`.  The
+	 * route depends on `Kind`:
+	 *   - Kind: "section" → full-page section playground
+	 *   - anything else   → Fable JS REPL drawer
+	 *
+	 * When no `_playground.json` exists (loadPlaygroundConfig resolves
+	 * to null), no button is added — the existing GitHub / Get Started
+	 * buttons stand on their own.
+	 */
+	renderPlaygroundButton()
+	{
+		let tmpDocProvider = this.pict.providers['Docuserve-Documentation'];
+		if (!tmpDocProvider || typeof tmpDocProvider.loadPlaygroundConfig !== 'function')
+		{
+			return;
+		}
+
+		let tmpAppData = this.pict.AppData.Docuserve || {};
+		let tmpGroup = tmpAppData.CurrentGroup || '';
+		let tmpModule = tmpAppData.CurrentModule || '';
+
+		tmpDocProvider.loadPlaygroundConfig(tmpGroup, tmpModule).then((pConfig) =>
+		{
+			if (!pConfig)
+			{
+				return;
+			}
+			let tmpRoute;
+			if (pConfig.Kind === 'section')
+			{
+				tmpRoute = (tmpGroup && tmpModule)
+					? '#/playground/section/' + tmpGroup + '/' + tmpModule
+					: '#/playground/section';
+			}
+			else
+			{
+				tmpRoute = '#/playground/fable';
+			}
+			let tmpButtonHTML = '<a class="secondary" href="' + this.escapeHTML(tmpRoute) + '">Playground</a>';
+			this.pict.ContentAssignment.projectContent('append', '#Docuserve-Splash-Actions', tmpButtonHTML);
+		})
+		.catch(() =>
+		{
+			// Soft failure — no button is added when the config can't load.
+		});
 	}
 
 	/**
