@@ -1488,7 +1488,7 @@ class DocuserveDocumentationProvider extends libPictProvider
 	 * corresponding #/doc/ route so the link navigates within docuserve
 	 * instead of leaving to GitHub.
 	 *
-	 * @param {string} pURL - A GitHub URL (e.g. "https://github.com/stevenvelozo/fable")
+	 * @param {string} pURL - A GitHub URL (e.g. "https://github.com/fable-retold/fable")
 	 * @returns {string|null} The hash route (e.g. "#/doc/fable/fable") or null if not a catalog module
 	 */
 	resolveGitHubURLToRoute(pURL)
@@ -1535,7 +1535,7 @@ class DocuserveDocumentationProvider extends libPictProvider
 	/**
 	 * Resolve the GitHub Pages documentation URL for a module.
 	 *
-	 * Returns a URL like https://stevenvelozo.github.io/pict-view/ if the
+	 * Returns a URL like https://fable-retold.github.io/pict-view/ if the
 	 * module exists in the catalog.
 	 *
 	 * @param {string} pGroup - The group key

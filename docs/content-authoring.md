@@ -111,7 +111,7 @@ Links to other documentation pages are automatically converted to hash routes:
 
 | Markdown Link | Resolved Route |
 |---------------|---------------|
-| `[text](https://stevenvelozo.github.io/fable/)` | `#/doc/fable/fable` |
+| `[text](https://fable-retold.github.io/fable/)` | `#/doc/fable/fable` |
 | `[text](architecture.md)` | `#/page/architecture` |
 | `[text](/meadow/foxhound/query-dsl.md)` | `#/doc/meadow/foxhound/query-dsl.md` |
 | `[text](https://example.com)` | Opens externally |

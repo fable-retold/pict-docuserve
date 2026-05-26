@@ -217,12 +217,12 @@ suite
 					(fDone) =>
 					{
 						var tmpProvider = createProvider();
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable')).to.equal('#/doc/fable/fable');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable-log')).to.equal('#/doc/fable/fable-log');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/foxhound')).to.equal('#/doc/meadow/foxhound');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/pict')).to.equal('#/doc/pict/pict');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/pict-template')).to.equal('#/doc/pict/pict-template');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/precedent')).to.equal('#/doc/utility/precedent');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable-log')).to.equal('#/doc/fable/fable-log');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/foxhound')).to.equal('#/doc/meadow/foxhound');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/pict')).to.equal('#/doc/pict/pict');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/pict-template')).to.equal('#/doc/pict/pict-template');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/precedent')).to.equal('#/doc/utility/precedent');
 						fDone();
 					}
 				);
@@ -232,9 +232,9 @@ suite
 					(fDone) =>
 					{
 						var tmpProvider = createProvider();
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable/')).to.equal('#/doc/fable/fable');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable/tree/master')).to.equal('#/doc/fable/fable');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/meadow-endpoints/issues')).to.equal('#/doc/meadow/meadow-endpoints');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable/')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable/tree/master')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/meadow-endpoints/issues')).to.equal('#/doc/meadow/meadow-endpoints');
 						fDone();
 					}
 				);
@@ -301,7 +301,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						tmpProvider._Catalog = null;
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable')).to.equal(null);
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable')).to.equal(null);
 						fDone();
 					}
 				);
@@ -890,7 +890,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						var tmpResolver = tmpProvider._createLinkResolver();
-						var tmpResult = tmpProvider._ContentProvider.parseInline('[fable](https://github.com/stevenvelozo/fable)', tmpResolver);
+						var tmpResult = tmpProvider._ContentProvider.parseInline('[fable](https://github.com/fable-retold/fable)', tmpResolver);
 						Expect(tmpResult).to.contain('#/doc/fable/fable');
 						Expect(tmpResult).to.not.contain('target="_blank"');
 						fDone();

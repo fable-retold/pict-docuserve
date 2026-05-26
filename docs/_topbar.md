@@ -6,4 +6,4 @@
 - [Deployment](deployment.md)
 - [Configuration](configuration.md)
 - [Fable Playground](fable-playground.md)
-- [GitHub](https://github.com/stevenvelozo/pict-docuserve)
+- [GitHub](https://github.com/fable-retold/pict-docuserve)

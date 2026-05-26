@@ -14,4 +14,4 @@ Turn any folder of markdown files into a searchable documentation site. Built on
 [Quick Start](README.md)
 [Content Authoring](content-authoring.md)
 [Deployment](deployment.md)
-[GitHub](https://github.com/stevenvelozo/pict-docuserve)
+[GitHub](https://github.com/fable-retold/pict-docuserve)

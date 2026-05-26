@@ -1,4 +1,4 @@
-> **Note:** This is sample documentation for a fictional product, created to demonstrate [pict-docuserve](https://github.com/stevenvelozo/pict-docuserve). It is not a real application.
+> **Note:** This is sample documentation for a fictional product, created to demonstrate [pict-docuserve](https://github.com/fable-retold/pict-docuserve). It is not a real application.
 
 # Tags & Filters
 
