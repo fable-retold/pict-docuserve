@@ -241,6 +241,28 @@ const _ViewConfiguration =
 		.pict-content pre.mermaid .arrowheadPath {
 			fill: var(--theme-color-text-secondary, #5E5549) !important;
 		}
+		/* Dark-mode override for handcrafted mermaid flowchart diagrams that
+		   bake per-node inline fill colors via `style X fill:#...` directives
+		   (the architecture / module docs use these to mark layer hierarchy
+		   with Material pastels). Mermaid renders those as inline
+		   `style="fill:#..."` SVG attributes — highest specificity, so neither
+		   themeVariables nor unflagged CSS can reach them. In light mode the
+		   pastels read fine; in dark mode the same light fills stamp a
+		   high-contrast island onto the dark page with unreadable text.
+		   Force the fills back to a theme background so dark-mode reads;
+		   light mode is intentionally unmodified so the per-layer hierarchy
+		   stays intact there. Sibling to the block-beta invert filter below:
+		   block-beta diagrams need full inversion (their inner palette is
+		   baked separately), flowcharts only need a fill swap. */
+		.theme-dark .pict-content pre.mermaid .node rect,
+		.theme-dark .pict-content pre.mermaid .node polygon,
+		.theme-dark .pict-content pre.mermaid .node circle,
+		.theme-dark .pict-content pre.mermaid .node ellipse,
+		.theme-dark .pict-content pre.mermaid .node path,
+		.theme-dark .pict-content pre.mermaid .cluster rect {
+			fill:   var(--theme-color-background-tertiary, #2A241E) !important;
+			stroke: var(--theme-color-border-default,      #5E5549) !important;
+		}
 		/* Mermaid 11's block-beta renderer ignores the themeVariables we
 		   pass to mermaid.initialize() — it bakes its own multi-color
 		   palette directly into each rect's inline SVG attributes.  In
