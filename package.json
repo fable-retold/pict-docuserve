@@ -35,7 +35,7 @@
 		"pict-section-content": "^1.0.8",
 		"pict-section-histogram": "^1.0.1",
 		"pict-section-modal": "^1.1.4",
-		"pict-section-theme": "^1.1.0",
+		"pict-section-theme": "^1.1.1",
 		"pict-service-commandlineutility": "^1.0.19",
 		"pict-view": "^1.0.68"
 	},
