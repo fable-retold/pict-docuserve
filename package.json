@@ -32,10 +32,10 @@
 		"pict-application": "^1.0.34",
 		"pict-provider": "^1.0.13",
 		"pict-section-code": "^1.0.11",
-		"pict-section-content": "^1.0.7",
+		"pict-section-content": "^1.0.8",
 		"pict-section-histogram": "^1.0.1",
 		"pict-section-modal": "^1.1.4",
-		"pict-section-theme": "^1.0.6",
+		"pict-section-theme": "^1.1.0",
 		"pict-service-commandlineutility": "^1.0.19",
 		"pict-view": "^1.0.68"
 	},

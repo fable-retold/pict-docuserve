@@ -771,7 +771,7 @@ function buildIframeSrcdoc(pConfig, pSpec, pBaseURL)
 		+ '          try {\n'
 		+ '            if (window.PictSectionTheme && window._Pict && typeof window._Pict.addProvider === "function") {\n'
 		+ '              if (!window._Pict.providers || !window._Pict.providers["Theme-Section"]) {\n'
-		+ '                window._Pict.addProvider("Theme-Section", { ApplyDefault: "pict-default", DefaultMode: "system", DefaultScale: 1.0, Views: ["Picker", "ModeToggle", "ScaleSelect"] }, window.PictSectionTheme);\n'
+		+ '                window._Pict.addProvider("Theme-Section", { ApplyDefault: "retold-default", DefaultMode: "system", DefaultScale: 1.0, Views: ["Picker", "ModeToggle", "ScaleSelect"] }, window.PictSectionTheme);\n'
 		+ '                window._Pict.views["Theme-Picker"].render();\n'
 		+ '                if (window._Pict.views["Theme-ModeToggle"]) { window._Pict.views["Theme-ModeToggle"].render(); }\n'
 		+ '                if (window._Pict.views["Theme-ScaleSelect"]) { window._Pict.views["Theme-ScaleSelect"].render(); }\n'

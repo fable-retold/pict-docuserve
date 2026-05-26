@@ -119,7 +119,7 @@ class DocuserveApplication extends libPictApplication
 	{
 		this.pict.addProvider('Theme-Section',
 		{
-			ApplyDefault: 'pict-default',
+			ApplyDefault: 'retold-default',
 			DefaultMode:  'system',
 			DefaultScale: 1.0,
 			Brand:        pBrand,
