@@ -619,6 +619,30 @@ const _ViewConfiguration =
 			color: var(--theme-color-text-primary, #2A241E) !important;
 			fill: var(--theme-color-text-primary, #2A241E) !important;
 		}
+		/* Same dark-mode fill/stroke override as for inline diagrams, but
+		   scoped to the fullscreen-overlay clone — which lives under
+		   <body>, NOT inside .pict-content, so the pre.mermaid-scoped
+		   rules above don't reach it. */
+		.theme-dark .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node rect,
+		.theme-dark .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node polygon,
+		.theme-dark .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node circle,
+		.theme-dark .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node ellipse,
+		.theme-dark .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node path,
+		.theme-dark .pict-fullscreen-content .pict-fullscreen-mermaid-svg .cluster rect {
+			fill:   var(--theme-color-background-tertiary, #2A241E) !important;
+			stroke: var(--theme-color-border-default,      #5E5549) !important;
+		}
+		@media (prefers-color-scheme: dark) {
+			html:not(.theme-light) .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node rect,
+			html:not(.theme-light) .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node polygon,
+			html:not(.theme-light) .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node circle,
+			html:not(.theme-light) .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node ellipse,
+			html:not(.theme-light) .pict-fullscreen-content .pict-fullscreen-mermaid-svg .node path,
+			html:not(.theme-light) .pict-fullscreen-content .pict-fullscreen-mermaid-svg .cluster rect {
+				fill:   var(--theme-color-background-tertiary, #2A241E) !important;
+				stroke: var(--theme-color-border-default,      #5E5549) !important;
+			}
+		}
 		.pict-fullscreen-content .pict-fullscreen-codewrap {
 			max-width: 90vw;
 			max-height: calc(100vh - 96px);
