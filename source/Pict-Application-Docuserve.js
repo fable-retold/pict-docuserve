@@ -237,6 +237,19 @@ class DocuserveApplication extends libPictApplication
 	 */
 	resolveHash()
 	{
+		this._resolveHashRoute();
+		// Keep the topbar "view source" (octocat) link pointed at whatever
+		// module the current route resolves to (fixed on per-module sites,
+		// changes per navigation on the aggregate).
+		let tmpTopBarUser = this.pict.views['Docuserve-TopBar-User'];
+		if (tmpTopBarUser && (typeof tmpTopBarUser.render === 'function'))
+		{
+			tmpTopBarUser.render();
+		}
+	}
+
+	_resolveHashRoute()
+	{
 		let tmpHash = (window.location.hash || '').replace(/^#\/?/, '');
 
 		if (!tmpHash || tmpHash === 'Home')

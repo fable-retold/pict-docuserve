@@ -46,6 +46,17 @@ const _ViewConfiguration =
 			background-color: var(--theme-color-background-hover, rgba(255, 255, 255, 0.06));
 			color: var(--theme-color-text-on-brand, var(--theme-color-text-primary, #E8E0D4));
 		}
+		.docuserve-user a.docuserve-repo-link
+		{
+			display: inline-flex;
+			align-items: center;
+			font-size: 1.15em;
+			padding: 0.35em 0.5em;
+		}
+		.docuserve-user a.docuserve-repo-link .docuserve-octocat
+		{
+			line-height: 0;
+		}
 	`,
 
 	Templates:
@@ -103,6 +114,26 @@ class DocuserveTopBarUserView extends libPictView
 				let tmpText = this._escapeHTML(tmpLink.Text || '');
 				let tmpIsExternal = /^https?:/i.test(tmpLink.Href || '');
 				tmpHTML += '<a href="' + tmpHref + '"' + (tmpIsExternal ? ' target="_blank" rel="noopener"' : '') + '>' + tmpText + '</a>';
+			}
+		}
+		// "View source" — octocat link to the current module's GitHub repo, so
+		// every docs site links back to the source it documents (fixed on a
+		// per-module site, follows the current module on the aggregate).
+		let tmpGroup = tmpDocuserve.CurrentGroup;
+		let tmpModule = tmpDocuserve.CurrentModule;
+		if (tmpGroup && tmpModule)
+		{
+			let tmpDocProvider = this.pict.providers['Docuserve-Documentation'];
+			let tmpRepoURL = (tmpDocProvider && (typeof tmpDocProvider.resolveGitHubRepoURL === 'function'))
+				? tmpDocProvider.resolveGitHubRepoURL(tmpGroup, tmpModule)
+				: null;
+			if (tmpRepoURL)
+			{
+				let tmpIcon = this.pict.icon('GitHub', { class: 'docuserve-octocat', ariaLabel: 'View source on GitHub' });
+				tmpHTML += '<a class="docuserve-repo-link" href="' + this._escapeHTML(tmpRepoURL) + '"'
+					+ ' target="_blank" rel="noopener"'
+					+ ' title="View ' + this._escapeHTML(tmpModule) + ' source on GitHub">'
+					+ tmpIcon + '</a>';
 			}
 		}
 		tmpEl.innerHTML = tmpHTML;

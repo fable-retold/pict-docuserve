@@ -324,6 +324,53 @@ suite
 
 		suite
 		(
+			'GitHub Repo URL Resolution',
+			function()
+			{
+				test
+				(
+					'resolveGitHubRepoURL should return the source repo URL for catalog modules.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider.resolveGitHubRepoURL('fable', 'fable')).to.equal('https://github.com/stevenvelozo/fable');
+						Expect(tmpProvider.resolveGitHubRepoURL('meadow', 'foxhound')).to.equal('https://github.com/stevenvelozo/foxhound');
+						Expect(tmpProvider.resolveGitHubRepoURL('pict', 'pict-template')).to.equal('https://github.com/stevenvelozo/pict-template');
+						fDone();
+					}
+				);
+				test
+				(
+					'resolveGitHubRepoURL should return a repo URL even when the module has no docs.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						// A repo exists regardless of whether it publishes a docs site, so the
+						// "view source" link is still offered when resolveGitHubPagesURL is null.
+						Expect(tmpProvider.resolveGitHubPagesURL('meadow', 'meadow-endpoints')).to.equal(null);
+						Expect(tmpProvider.resolveGitHubRepoURL('meadow', 'meadow-endpoints')).to.equal('https://github.com/stevenvelozo/meadow-endpoints');
+						Expect(tmpProvider.resolveGitHubRepoURL('utility', 'precedent')).to.equal('https://github.com/stevenvelozo/precedent');
+						fDone();
+					}
+				);
+				test
+				(
+					'resolveGitHubRepoURL should return null for unknown modules and no catalog.',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						Expect(tmpProvider.resolveGitHubRepoURL('fable', 'nonexistent')).to.equal(null);
+						Expect(tmpProvider.resolveGitHubRepoURL('nogroup', 'fable')).to.equal(null);
+						tmpProvider._Catalog = null;
+						Expect(tmpProvider.resolveGitHubRepoURL('fable', 'fable')).to.equal(null);
+						fDone();
+					}
+				);
+			}
+		);
+
+		suite
+		(
 			'Document URL Resolution',
 			function()
 			{
