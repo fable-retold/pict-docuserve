@@ -5,12 +5,12 @@ drawer at the bottom of every docuserve page.  Click the **Playground**
 tab at the bottom edge of the viewport (or use the button below) to
 expand it; write JavaScript that receives a fresh `fable` instance;
 press **Run** and the log records emitted by your code show up in the
-panel to the right — colored by level, with relative timestamps and
+panel to the right - colored by level, with relative timestamps and
 serialized data payloads.
 
 <button onclick="_Pict.views['Docuserve-Layout'].expandPlayground()" style="padding: 0.6em 1.2em; font-size: 1em; font-weight: 600; background: var(--theme-color-brand-primary, #2E7D74); color: var(--theme-color-background-panel, #FFFFFF); border: 1px solid var(--theme-color-brand-primary, #2E7D74); border-radius: 4px; cursor: pointer;">▲ Open the Fable Playground drawer</button>
 
-The drawer is **draggable** — pull the handle up to give it more room
+The drawer is **draggable** - pull the handle up to give it more room
 or push it back down to almost nothing.  It stays expanded as you
 navigate between doc pages, so you can keep tinkering while reading.
 Collapse the drawer (click the tab at the bottom) to recover the full
@@ -19,13 +19,13 @@ viewport for reading.
 ## What the playground does
 
 Every press of **Run** creates a fresh Fable instance with **no default
-log streams**, then attaches a capture logger at the `trace` level —
+log streams**, then attaches a capture logger at the `trace` level -
 which cascades to every higher level, so `trace`, `debug`, `info`,
 `warn`, `error`, and `fatal` all flow into the log pane.  The
 playground-provided `fable` global is that instance.  The capture
 logger pushes each record into a per-run array, scheduling a debounced
 (~60ms) re-render so that **asynchronous** log calls (`setTimeout`,
-`Promise.then`, `fetch().then`, …) surface as they arrive instead of
+`Promise.then`, `fetch().then`, ...) surface as they arrive instead of
 being silently dropped after the synchronous portion of your code
 returns.
 
@@ -42,11 +42,11 @@ fable.log.info('two Fables, one capture pane', {
 
 (Note: the example above logs via the playground-provided `fable`,
 which has the capture logger attached.  A standalone `app.log.info(...)`
-call would go to whatever streams `app` was constructed with — typically
+call would go to whatever streams `app` was constructed with - typically
 the default `console` stream at `info` level, which the playground
 panel doesn't see.)
 
-Your code runs inside a `new Function('fable', 'pict', 'require', code)` —
+Your code runs inside a `new Function('fable', 'pict', 'require', code)` -
 so:
 
 - `fable` is the fresh instance with the capture logger attached
@@ -66,12 +66,12 @@ record so failures are visible without opening the browser console.
 
 ## Pulling examples from the docs
 
-Every `language-javascript` code block in the docs gets a small **▶**
+Every `language-javascript` code block in the docs gets a small play
 play button next to its **Copy** / **Fullscreen** action buttons.
 Click it and the code is loaded into the playground drawer (which
 slides up if it was collapsed), ready to **Run**.
 
-Not every example will run as-is — some assume a Node runtime, some
+Not every example will run as-is - some assume a Node runtime, some
 reference variables from earlier in the page, some pull in modules
 the `require` shim doesn't know about.  That's expected; the error
 becomes a captured `error` record in the log pane and you (or the
@@ -82,7 +82,7 @@ readers know what to expect before they press Run.
 ## Why a fresh Fable each Run?
 
 Stability of output is the whole point.  Re-running the same code
-produces the same record sequence — no leftover state, no log streams
+produces the same record sequence - no leftover state, no log streams
 that the previous run attached, no settings drift.  This is what makes
 the playground viable as a documentation tool: snippets in the docs can
 demonstrate behavior reliably, and you can edit them and re-Run as many
@@ -100,7 +100,7 @@ Each rendered record carries four pieces:
 | Datum | Second arg, serialized via `JSON.stringify` and shown in the property color |
 
 For the `fatal` level, the badge inverts (white on red) instead of just
-coloring the text — it's the only level loud enough to demand visual
+coloring the text - it's the only level loud enough to demand visual
 escalation past the surrounding monospace flow.
 
 ## Persistence
@@ -112,7 +112,7 @@ session AppData and the localStorage entry, so the default sample
 returns on the next reload too.
 
 The drawer's collapse state and resized height are persisted by
-pict-section-modal's shell — the next page load remembers what you set.
+pict-section-modal's shell - the next page load remembers what you set.
 
 ## How it's wired up
 
@@ -123,7 +123,7 @@ that the Layout view registers at boot via
 'resizable', Collapsed: true, ContentDestinationId:
 'Docuserve-Playground-Drawer-Content' })`.  The panel's `OnExpand`
 callback lazy-mounts the playground view the first time the drawer is
-opened — until then, only the labeled tab strip is rendered.
+opened - until then, only the labeled tab strip is rendered.
 
 The editor pane inside the playground is itself a sub-view: a
 `pict-section-code` subclass (`FablePlaygroundCodeEditor`) registered in
@@ -136,12 +136,12 @@ on first mount.
 
 The playground exposes three public methods worth knowing:
 
-- `mountIntoDrawer()` — mounts into the layout's bottom panel; called
+- `mountIntoDrawer()` - mounts into the layout's bottom panel; called
   by the shell's `OnExpand` callback
-- `mountInto(containerElement)` — same template / editor flow, but
+- `mountInto(containerElement)` - same template / editor flow, but
   mounts into any DOM element (useful for set-piece doc pages that
   want an inline playground)
-- `loadCode(code)` — replaces the editor content and slides the drawer
+- `loadCode(code)` - replaces the editor content and slides the drawer
   open.  This is the handoff path for "Try in playground" buttons that
   ship code from a doc page's fenced code example straight into the
   drawer

@@ -495,7 +495,7 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 		// The launch link is a plain browser link the browser resolves against
 		// the docs-root index.html — so it carries the full docs-root-relative
 		// path and works from the writeup's folder or anywhere else.
-		let tmpInner = `> **[&#9654; Launch the live app](${mdSafeUrl('examples/' + tmpName + '/index.html')})** — runs in your browser, opens in a new tab.`;
+		let tmpInner = `> **[Launch the live app](${mdSafeUrl('examples/' + tmpName + '/index.html')})** - runs in your browser, opens in a new tab.`;
 
 		let tmpText;
 		if (libFS.existsSync(tmpReadmePath))
@@ -542,7 +542,7 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 			// The writeup is a .md SPA route resolved relative to this index;
 			// the launch link is a plain browser link carrying the full
 			// docs-root-relative path.
-			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl(pEx.Name + '/README.md')}) | ${tmpComplexity} | ${escapeTableCell(pEx.Summary)} | [&#9654; Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
+			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl(pEx.Name + '/README.md')}) | ${tmpComplexity} | ${escapeTableCell(pEx.Summary)} | [Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
 		});
 		let tmpInner = [
 			'| Example | Complexity | Summary | Live |',
@@ -584,7 +584,7 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 		let tmpRows = pStaged.map((pEx) =>
 		{
 			let tmpComplexity = escapeTableCell(pEx.Complexity) || '—';
-			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl('examples/' + pEx.Name + '/README.md')}) | ${tmpComplexity} | [&#9654; Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
+			return `| [${escapeTableCell(pEx.Title)}](${mdSafeUrl('examples/' + pEx.Name + '/README.md')}) | ${tmpComplexity} | [Launch](${mdSafeUrl('examples/' + pEx.Name + '/index.html')}) |`;
 		});
 		let tmpInner = [
 			'| Example | Complexity | Launch |',

@@ -7,7 +7,7 @@ meadow, etc. through the same exercise.
 ## Goal
 
 Every code block tagged ```` ```javascript ```` (and ```` ```js ````) in a
-module's docs gets a "▶ Try in Playground" button.  Clicking that button
+module's docs gets a "play Try in Playground" button.  Clicking that button
 loads the snippet into the editor and runs it.  After this upgrade, **none
 of those clicks should throw** in the playground.  JSON blocks should be
 valid JSON.
@@ -66,19 +66,19 @@ User code is wrapped in:
 })()
 ```
 
-…and invoked with four parameters:
+...and invoked with four parameters:
 
 | Name | What it is |
 |---|---|
 | `fable`   | A fresh `Fable` instance preconfigured with the capture logger. |
 | `pict`    | The live docuserve Pict instance. |
-| `require` | A curated shim — only names listed in the current module's `_playground.json` (or fable's bundled fallback) resolve.  Anything else throws a friendly error. |
+| `require` | A curated shim - only names listed in the current module's `_playground.json` (or fable's bundled fallback) resolve.  Anything else throws a friendly error. |
 | `console` | A per-run shim that pipes `console.log/info/warn/error/debug/trace` calls into the log panel AND forwards to the real browser dev-console. |
 
 Anything the snippet pushes into `fable.log.*` after the synchronous run
 ends still gets captured (the capture logger holds a closure over the
 records array).  The finish banner is deferred until the records array
-sits quiet for 200ms (capped at 10s) — so `setTimeout`/Promise/fetch
+sits quiet for 200ms (capped at 10s) - so `setTimeout`/Promise/fetch
 chains have time to land before the banner emits.
 
 ## Gotcha checklist
@@ -89,8 +89,8 @@ module's docs and check each item:
 ### 1. JSON-like blocks that aren't valid JS
 
 A bare object literal at the top of a script is parsed as a **block**,
-not an object — the property names become labels.  `UUIDLength: 8,` is a
-labeled statement followed by an invalid trailing comma → syntax error.
+not an object - the property names become labels.  `UUIDLength: 8,` is a
+labeled statement followed by an invalid trailing comma -> syntax error.
 
 **Wrong:**
 
@@ -116,7 +116,7 @@ labeled statement followed by an invalid trailing comma → syntax error.
 ```
 ````
 
-JSON blocks don't get the play button — they're display-only — so quote
+JSON blocks don't get the play button - they're display-only - so quote
 the keys and you're done.
 
 **Right (if it's meant as a JS value):**
@@ -136,7 +136,7 @@ console.log(config);
 
 The first block on a docs page typically declares `const libXxx = require('xxx');`.
 Subsequent blocks reuse `libXxx` from "implicit context" the reader is
-expected to remember.  The playground has no implicit context — each
+expected to remember.  The playground has no implicit context - each
 block runs in its own fresh async IIFE.
 
 **Fix:** every block that references a `lib*` identifier needs its own
@@ -157,12 +157,12 @@ side often do:
 
 ```javascript
 const uuid = new libFableUUID();             // standard
-const uuid = new libFableUUID({ ... });      // with config — RE-DECLARE!
+const uuid = new libFableUUID({ ... });      // with config - RE-DECLARE!
 ```
 
-Two `const`s with the same name in the same scope → `SyntaxError: Identifier 'uuid' has already been declared`.
+Two `const`s with the same name in the same scope -> `SyntaxError: Identifier 'uuid' has already been declared`.
 
-**Fix:** rename the second one (`uuidRandom`, `uuidWithConfig`, …) and add
+**Fix:** rename the second one (`uuidRandom`, `uuidWithConfig`, ...) and add
 `console.log` calls so the user sees both outputs in the panel.
 
 ### 4. Undeclared variables
@@ -173,7 +173,7 @@ to have in scope.  In the playground those throw `ReferenceError`.
 
 **Fix:** declare the variable at the top of the snippet.  If the snippet
 is "fill the buffer with values", a zeros-filled `new Uint8Array(16)` is
-a fine stand-in — the output is just `00000000-0000-...` which is
+a fine stand-in - the output is just `00000000-0000-...` which is
 actually informative.
 
 ### 5. Node-only APIs
@@ -187,7 +187,7 @@ runnable one.  Keeps the doc value of showing the Node-side code without
 crashing the playground:
 
 ```javascript
-// Node.js reference — won't run in the browser playground.
+// Node.js reference - won't run in the browser playground.
 console.info("In Node.js: const crypto = require('crypto'); crypto.randomBytes(16);");
 ```
 
@@ -216,12 +216,12 @@ else
 
 Webpack configs, jest configs, etc. use `module.exports = {...}`.  In
 the playground the `(async () => {...})()` wrapper means `module` isn't
-defined — throws `ReferenceError`.
+defined - throws `ReferenceError`.
 
 **Pattern:** assign to a local const and `console.info` it:
 
 ```javascript
-// webpack.config.js — build-time config, shown as reference text.
+// webpack.config.js - build-time config, shown as reference text.
 const webpackConfig = {
     entry: './app.js',
     output: { filename: 'bundle.js' }
@@ -247,7 +247,7 @@ const Expect = (pActual) => ({ to: { equal: (pExpected) =>
 }});
 const myFeature = { process: (pInput) => ({ success: pInput.value === 42 }) };
 
-// …then the snippet you actually want to demonstrate.
+// ...then the snippet you actually want to demonstrate.
 ```
 
 ### 9. `// =>` comment-only outputs
@@ -261,7 +261,7 @@ playground panel actually shows the value:
 
 ```javascript
 const id = uuid.getUUID();
-console.log(id);                                       // ← added
+console.log(id);                                       // <- added
 // => "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 ```
 
@@ -269,7 +269,7 @@ console.log(id);                                       // ← added
 
 Snippets with `setTimeout` / `setInterval` / `fetch` may finish their
 sync portion in 3ms but keep emitting records for seconds afterwards.
-The settle-window watcher handles this automatically — don't bolt on
+The settle-window watcher handles this automatically - don't bolt on
 your own timer.  Just write the natural async code; the finish banner
 will appear once the records array goes quiet.
 
@@ -302,7 +302,7 @@ For each module, after editing:
    });
    _Pict.views['Docuserve-Layout'].expandPlayground();
    ```
-4. Run each block's exact source through `_runSnippet('file:line label', `…`)`.
+4. Run each block's exact source through `_runSnippet('file:line label', `...`)`.
    Failures appear as `ok: false` with the error message.
 5. Iterate on the doc source until every block returns `ok: true`.
 
@@ -313,7 +313,7 @@ A module passes when:
 - Every ```` ```javascript ```` and ```` ```js ```` block in the docs
   runs to completion in the playground with zero `error`-level records.
 - Every ```` ```json ```` block parses as valid JSON.
-- The docs still read naturally in plain Markdown — adding `console.log`
+- The docs still read naturally in plain Markdown - adding `console.log`
   or stubbed helpers shouldn't make the prose worse.  If a snippet got
-  weirder, prefer wrapping it in the `// Reference — won't run` pattern
+  weirder, prefer wrapping it in the `// Reference - won't run` pattern
   over contorting it to fit the playground.
