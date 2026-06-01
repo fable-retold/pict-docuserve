@@ -366,6 +366,27 @@ suite
 						fDone();
 					}
 				);
+				test
+				(
+					'resolveGitHubRepoURL should resolve a module-mode catalog (per-module docs site).',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						// A per-module site serves a module-mode catalog: one Module, empty Groups.
+						// Its route handlers leave CurrentModule blank, so a blank module name must
+						// still resolve the single documented module (this powers the topbar octocat).
+						tmpProvider._Catalog =
+						{
+							Mode: 'module',
+							GitHubOrg: 'stevenvelozo',
+							Module: { Name: 'ultravisor-file-stream', Repo: 'ultravisor-file-stream', Group: '', HasDocs: true },
+							Groups: []
+						};
+						Expect(tmpProvider.resolveGitHubRepoURL('', '')).to.equal('https://github.com/stevenvelozo/ultravisor-file-stream');
+						Expect(tmpProvider.resolveGitHubRepoURL('', 'ultravisor-file-stream')).to.equal('https://github.com/stevenvelozo/ultravisor-file-stream');
+						fDone();
+					}
+				);
 			}
 		);
 

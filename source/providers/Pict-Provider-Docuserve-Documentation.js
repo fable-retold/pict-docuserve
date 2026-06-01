@@ -1610,7 +1610,22 @@ class DocuserveDocumentationProvider extends libPictProvider
 	 */
 	resolveGitHubRepoURL(pGroup, pModule)
 	{
-		if (!this._Catalog || !this._Catalog.Groups)
+		if (!this._Catalog)
+		{
+			return null;
+		}
+
+		// Module-mode catalog: a single Module field, Groups is empty. On a
+		// per-module docs site the route handlers leave CurrentModule blank, so
+		// pModule may be empty -- the single Module is the answer either way.
+		if (this._Catalog.Module && this._Catalog.Module.Name && (!pModule || this._Catalog.Module.Name === pModule))
+		{
+			let tmpModuleModeModule = this._Catalog.Module;
+			let tmpModuleModeOrg = tmpModuleModeModule.Org || this._Catalog.GitHubOrg || 'stevenvelozo';
+			return 'https://github.com/' + tmpModuleModeOrg + '/' + (tmpModuleModeModule.Repo || tmpModuleModeModule.Name);
+		}
+
+		if (!this._Catalog.Groups)
 		{
 			return null;
 		}

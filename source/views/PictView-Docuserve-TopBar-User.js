@@ -121,12 +121,16 @@ class DocuserveTopBarUserView extends libPictView
 		// per-module site, follows the current module on the aggregate).
 		let tmpGroup = tmpDocuserve.CurrentGroup;
 		let tmpModule = tmpDocuserve.CurrentModule;
-		if (tmpGroup && tmpModule)
+		let tmpDocProvider = this.pict.providers['Docuserve-Documentation'];
+		// On a per-module (module-mode) site the route handlers leave
+		// CurrentModule blank; the single documented module lives on the catalog.
+		if ((!tmpModule) && tmpDocProvider && tmpDocProvider._Catalog && tmpDocProvider._Catalog.Module)
 		{
-			let tmpDocProvider = this.pict.providers['Docuserve-Documentation'];
-			let tmpRepoURL = (tmpDocProvider && (typeof tmpDocProvider.resolveGitHubRepoURL === 'function'))
-				? tmpDocProvider.resolveGitHubRepoURL(tmpGroup, tmpModule)
-				: null;
+			tmpModule = tmpDocProvider._Catalog.Module.Name;
+		}
+		if (tmpModule && tmpDocProvider && (typeof tmpDocProvider.resolveGitHubRepoURL === 'function'))
+		{
+			let tmpRepoURL = tmpDocProvider.resolveGitHubRepoURL(tmpGroup, tmpModule);
 			if (tmpRepoURL)
 			{
 				let tmpIcon = this.pict.icon('GitHub', { class: 'docuserve-octocat', ariaLabel: 'View source on GitHub' });
