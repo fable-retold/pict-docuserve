@@ -650,6 +650,53 @@ const _ViewConfiguration =
 			overflow: auto;
 			box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
 		}
+
+		/* Bespoke pict-renderer-graph diagram theming.  Inlined diagram SVGs
+		   (see _inlineDiagramSVGs) paint with var(--diagram-*); define those
+		   tokens per theme so the diagrams follow light/dark like everything
+		   else.  Mirrors the .theme-dark + prefers-color-scheme pattern the
+		   mermaid rules above use. */
+		.pict-content
+		{
+			--diagram-ink:        #1B1F23;
+			--diagram-paper:      #FBF7EE;
+			--diagram-accent:     #C9602F;
+			--diagram-highlight:  #E8C547;
+			--diagram-deemphasis: #8A7F72;
+			--diagram-link:       #2E7D74;
+		}
+		.theme-dark .pict-content
+		{
+			--diagram-ink:        #E8E0D4;
+			--diagram-paper:      #20262E;
+			--diagram-accent:     #E8956A;
+			--diagram-highlight:  #E8C547;
+			--diagram-deemphasis: #9A8F80;
+			--diagram-link:       #5FB3A8;
+		}
+		@media (prefers-color-scheme: dark)
+		{
+			html:not(.theme-light) .pict-content
+			{
+				--diagram-ink:        #E8E0D4;
+				--diagram-paper:      #20262E;
+				--diagram-accent:     #E8956A;
+				--diagram-highlight:  #E8C547;
+				--diagram-deemphasis: #9A8F80;
+				--diagram-link:       #5FB3A8;
+			}
+		}
+		.docuserve-inline-diagram
+		{
+			display: block;
+			margin: 1.25em 0;
+			text-align: center;
+		}
+		.docuserve-inline-diagram svg
+		{
+			max-width: 100%;
+			height: auto;
+		}
 	`,
 
 	Templates:
@@ -760,6 +807,52 @@ class DocuserveContentView extends libPictContentView
 		// JavaScript code block.  The button sits alongside the existing
 		// Copy / Fullscreen buttons in the hover-revealed action strip.
 		this._addPlaygroundButtonsToCodeBlocks();
+
+		// Inline diagram SVGs so their var(--diagram-*) colors cascade from
+		// the active theme instead of being isolated inside an <img>.
+		this._inlineDiagramSVGs();
+	}
+
+	/**
+	 * Replace `<img src="...svg">` in the rendered content with the SVG
+	 * inlined into the DOM.  An `<img>` is style-isolated, so a diagram SVG
+	 * whose colors are `var(--diagram-*)` cannot see the page's theme
+	 * variables; inlining lets them cascade, which is what makes bespoke
+	 * pict-renderer-graph diagrams follow light/dark like the rest of the
+	 * docs.  Idempotent (data-docuserve-inlined); any fetch/parse failure
+	 * leaves the original `<img>` untouched as a graceful fallback.
+	 */
+	_inlineDiagramSVGs()
+	{
+		let tmpBody = document.getElementById('Docuserve-Content-Body');
+		if (!tmpBody) { return; }
+		let tmpImages = tmpBody.querySelectorAll('img[src$=".svg"]:not([data-docuserve-inlined])');
+		for (let i = 0; i < tmpImages.length; i++)
+		{
+			let tmpImage = tmpImages[i];
+			// Mark first so a re-render mid-fetch doesn't double-process.
+			tmpImage.setAttribute('data-docuserve-inlined', '1');
+			let tmpSource = tmpImage.getAttribute('src');
+			if (!tmpSource) { continue; }
+			let tmpAlt = tmpImage.getAttribute('alt') || '';
+			fetch(tmpSource)
+				.then((pResponse) => (pResponse && pResponse.ok) ? pResponse.text() : null)
+				.then((pSvgText) =>
+				{
+					if (!pSvgText || !tmpImage.parentNode) { return; }
+					let tmpParsed = new DOMParser().parseFromString(pSvgText, 'image/svg+xml');
+					let tmpSvgElement = tmpParsed && tmpParsed.documentElement;
+					if (!tmpSvgElement || (String(tmpSvgElement.tagName).toLowerCase() !== 'svg')) { return; }
+					let tmpImported = document.importNode(tmpSvgElement, true);
+					tmpImported.setAttribute('role', 'img');
+					if (tmpAlt) { tmpImported.setAttribute('aria-label', tmpAlt); }
+					let tmpWrapper = document.createElement('span');
+					tmpWrapper.className = 'docuserve-inline-diagram';
+					tmpWrapper.appendChild(tmpImported);
+					tmpImage.parentNode.replaceChild(tmpWrapper, tmpImage);
+				})
+				.catch(() => {});
+		}
 	}
 
 	/**
