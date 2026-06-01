@@ -62,12 +62,15 @@ class DocuserveDocumentationProvider extends libPictProvider
 				let tmpRoute = this.convertDocLink(tmpHref, pCurrentGroup, pCurrentModule, pCurrentDocPath);
 				return { href: tmpRoute };
 			}
-			// Check if this is a GitHub URL that matches a catalog module
-			let tmpCatalogRoute = this.resolveGitHubURLToRoute(tmpHref);
-			if (tmpCatalogRoute)
-			{
-				return { href: tmpCatalogRoute };
-			}
+			// GitHub URLs (github.com/org/repo, /blob/..., /issues, "Source"
+			// links, etc.) are intentionally left as external links and open on
+			// GitHub exactly as written. Earlier versions auto-rewrote any
+			// github.com URL that matched a catalog module into an internal #/doc/
+			// route, which "hijacked" Source / View-on-GitHub links and links to
+			// specific files or issues. Cross-module documentation references
+			// should instead use docuserve routes (e.g. /pict/pict-view/), which
+			// the rule above resolves through the catalog. resolveGitHubURLToRoute()
+			// remains available as an explicit utility for code that wants it.
 			// Module mode: a remaining relative link (a directory, a media
 			// file, a .json) is resolved against the current document's
 			// directory too, so it shares the one base every other link uses
