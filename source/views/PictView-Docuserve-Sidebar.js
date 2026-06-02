@@ -611,6 +611,20 @@ class DocusserveSidebarView extends libPictView
 		this.pict.AppData.Docuserve.SidebarGroupRecords = tmpRecords;
 	}
 
+	// A module-sidebar entry path is normally a docs-relative page that routes
+	// under #/doc/<group>/<module>/.  External and non-document links (absolute
+	// or protocol-relative URLs, in-page anchors, mailto:/tel:) are navigation
+	// targets verbatim -- prefixing them with the doc route is what turned the
+	// Retold Ecosystem links into dead "#/doc/.../https://..." pages.
+	_moduleSidebarRoute(pPath, pRoutePrefix)
+	{
+		if (/^(?:[a-z][a-z0-9+.\-]*:\/\/|\/\/|mailto:|tel:|#)/i.test(pPath))
+		{
+			return pPath;
+		}
+		return pRoutePrefix + pPath;
+	}
+
 	_refreshModuleNavSections()
 	{
 		let tmpGroup  = this.pict.AppData.Docuserve.CurrentGroup;
@@ -666,7 +680,7 @@ class DocusserveSidebarView extends libPictView
 							tmpCurrentSection.Items.push(
 							{
 								Title: tmpChild.Title,
-								Route: tmpRoutePrefix + tmpChild.Path,
+								Route: this._moduleSidebarRoute(tmpChild.Path, tmpRoutePrefix),
 								ActiveClass: ''
 							});
 						}
@@ -682,7 +696,7 @@ class DocusserveSidebarView extends libPictView
 					tmpCurrentSection.Items.push(
 					{
 						Title: tmpEntry.Title,
-						Route: tmpRoutePrefix + tmpEntry.Path,
+						Route: this._moduleSidebarRoute(tmpEntry.Path, tmpRoutePrefix),
 						ActiveClass: ''
 					});
 				}

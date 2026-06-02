@@ -523,6 +523,22 @@ suite
 						fDone();
 					}
 				);
+				test
+				(
+					'convertSidebarLink should pass external URLs through verbatim (Retold Ecosystem links).',
+					(fDone) =>
+					{
+						var tmpProvider = createProvider();
+						// Module mode is where this used to break -- a docs-site URL
+						// got folded into a dead "#/page/https:/host/..." route.
+						tmpProvider._Catalog = { Mode: 'module', Groups: [] };
+						Expect(tmpProvider.convertSidebarLink('https://fable-retold.github.io/pict/')).to.equal('https://fable-retold.github.io/pict/');
+						Expect(tmpProvider.convertSidebarLink('http://example.com/x')).to.equal('http://example.com/x');
+						Expect(tmpProvider.convertSidebarLink('//cdn.example.com/lib/')).to.equal('//cdn.example.com/lib/');
+						Expect(tmpProvider.convertSidebarLink('mailto:steven@velozo.com')).to.equal('mailto:steven@velozo.com');
+						fDone();
+					}
+				);
 			}
 		);
 

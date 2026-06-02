@@ -257,6 +257,10 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 
 		ensureDir(libPath.join(tmpDocsFolder, 'examples'));
 
+		// Shared vendor bundles are staged once per run, keyed by SharedVendor.Key:
+		// the first example that declares a key writes it; the rest reference it.
+		this._SharedVendorStaged = {};
+
 		// Build + stage each flagged example.  A per-example failure is
 		// logged and skipped — it is never fatal to the overall run.
 		let tmpStaged = [];
@@ -373,6 +377,11 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 			let tmpStageDir = libPath.join(pDocsFolder, 'examples', tmpName);
 			ensureDir(tmpStageDir);
 
+			// Stage shared vendor bundles (e.g. the heavy Excalidraw runtime)
+			// into examples/_shared/<Key>/ once, then reference them from every
+			// example -- so three Excalidraw demos don't each carry a ~25MB copy.
+			let tmpSharedVendor = this._stageSharedVendor(pExample, tmpDistPath, pDocsFolder);
+
 			// 3. Read the built index.html and rewrite vendored <script src>
 			// references to their CDN URLs.  The app's own bundle <script>
 			// (a sibling file) is left untouched.
@@ -381,6 +390,12 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 			{
 				let tmpPattern = new RegExp('(\\bsrc\\s*=\\s*)(["\'])\\.?/?' + escapeRegExp(pBasename) + '\\2', 'gi');
 				tmpHTML = tmpHTML.replace(tmpPattern, '$1$2' + pCDNURL + '$2');
+			});
+			// Rewrite shared-vendor <script src> / <link href> to the shared copy.
+			tmpSharedVendor.Rewrites.forEach((pRelPath, pBasename) =>
+			{
+				let tmpSharedPattern = new RegExp('(\\b(?:src|href)\\s*=\\s*)(["\'])\\.?/?' + escapeRegExp(pBasename) + '\\2', 'gi');
+				tmpHTML = tmpHTML.replace(tmpSharedPattern, '$1$2' + pRelPath + '$2');
 			});
 			libFS.writeFileSync(libPath.join(tmpStageDir, 'index.html'), tmpHTML);
 
@@ -418,6 +433,10 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 					continue;
 				}
 				if (tmpVendoredBasenames.has(tmpFile))
+				{
+					continue;
+				}
+				if (tmpSharedVendor.Skip.has(tmpFile))
 				{
 					continue;
 				}
@@ -474,6 +493,114 @@ class DocuserveCommandStageExamples extends libCommandLineCommand
 			this.log.warn(`  [${tmpName}] staging failed; skipping. ${pError.message}`);
 			return null;
 		}
+	}
+
+	/**
+	 * Stage an example's declared shared-vendor files (heavy runtime bundles +
+	 * asset directories) into examples/_shared/<Key>/ ONCE per run, and return
+	 * the per-example index.html rewrites + the set of dist basenames to skip
+	 * in the normal per-example copy.
+	 *
+	 * Declared in the example's package.json under the staging flag:
+	 *   retold.ExampleApplication.SharedVendor = {
+	 *     Key:       'excalidraw',
+	 *     Scripts:   [ 'react-vendor.min.js', 'excalidraw-wrapper.min.js' ],
+	 *     Styles:    [ 'excalidraw-wrapper.css' ],
+	 *     AssetDirs: [ 'excalidraw-assets' ]
+	 *   }
+	 *
+	 * Why: the three Excalidraw demos each vendor the same ~25MB runtime (an
+	 * 8.4MB wrapper + 17MB of fonts/assets). Copying that per-example would bloat
+	 * the docs repo ~3x; staging it once and pointing every demo at
+	 * examples/_shared/excalidraw/ keeps the growth to a single copy.
+	 *
+	 * The Excalidraw wrapper resolves its runtime assets relative to its own
+	 * <script> URL (window.EXCALIDRAW_ASSET_PATH is unset), so co-locating the
+	 * wrapper and its asset dir under _shared/<Key>/ keeps the fonts loading with
+	 * no per-example asset-path configuration. Note the stock per-example copy
+	 * never staged asset DIRECTORIES at all (it copies files only), so a heavy
+	 * example would otherwise ship without its fonts.
+	 *
+	 * @param {object} pExample - { Name, Dir, Package, Flag }
+	 * @param {string} pDistPath - the example's built dist folder
+	 * @param {string} pDocsFolder - the docs root being staged into
+	 * @returns {{Rewrites: Map<string,string>, Skip: Set<string>}}
+	 */
+	_stageSharedVendor(pExample, pDistPath, pDocsFolder)
+	{
+		let tmpOut = { Rewrites: new Map(), Skip: new Set() };
+		let tmpShared = pExample.Flag && pExample.Flag.SharedVendor;
+		if (!tmpShared || !tmpShared.Key)
+		{
+			return tmpOut;
+		}
+
+		let tmpKey       = String(tmpShared.Key);
+		let tmpScripts   = Array.isArray(tmpShared.Scripts)   ? tmpShared.Scripts   : [];
+		let tmpStyles    = Array.isArray(tmpShared.Styles)    ? tmpShared.Styles    : [];
+		let tmpAssetDirs = Array.isArray(tmpShared.AssetDirs) ? tmpShared.AssetDirs : [];
+		let tmpSharedDir = libPath.join(pDocsFolder, 'examples', '_shared', tmpKey);
+		let tmpRelBase   = '../_shared/' + tmpKey + '/';
+
+		if (!this._SharedVendorStaged)
+		{
+			this._SharedVendorStaged = {};
+		}
+
+		// Copy the shared bundle exactly once per run (it is identical across the
+		// examples that share the Key, since they vendor the same build).
+		if (!this._SharedVendorStaged[tmpKey])
+		{
+			ensureDir(tmpSharedDir);
+			let tmpFiles = tmpScripts.concat(tmpStyles);
+			for (let i = 0; i < tmpFiles.length; i++)
+			{
+				let tmpSource = libPath.join(pDistPath, tmpFiles[i]);
+				if (!libFS.existsSync(tmpSource))
+				{
+					this.log.warn(`  [${pExample.Name}] shared vendor file not found in dist: ${tmpFiles[i]}`);
+					continue;
+				}
+				let tmpDest = libPath.join(tmpSharedDir, tmpFiles[i]);
+				if (tmpFiles[i].endsWith('.js'))
+				{
+					// Strip the sourceMappingURL pragma — the .map sibling is not
+					// staged, so the pragma would 404 in devtools.
+					let tmpJS = libFS.readFileSync(tmpSource, 'utf8').replace(/\s*\/\/[#@]\s*sourceMappingURL=\S*\s*$/, '\n');
+					libFS.writeFileSync(tmpDest, tmpJS);
+				}
+				else
+				{
+					libFS.copyFileSync(tmpSource, tmpDest);
+				}
+			}
+			for (let i = 0; i < tmpAssetDirs.length; i++)
+			{
+				let tmpSourceDir = libPath.join(pDistPath, tmpAssetDirs[i]);
+				if (!libFS.existsSync(tmpSourceDir))
+				{
+					this.log.warn(`  [${pExample.Name}] shared asset dir not found in dist: ${tmpAssetDirs[i]}`);
+					continue;
+				}
+				libFS.cpSync(tmpSourceDir, libPath.join(tmpSharedDir, tmpAssetDirs[i]), { recursive: true });
+			}
+			this._SharedVendorStaged[tmpKey] = true;
+			this.log.info(`  [${pExample.Name}] shared vendor '${tmpKey}' -> examples/_shared/${tmpKey}/ (${tmpScripts.length + tmpStyles.length} file(s), ${tmpAssetDirs.length} asset dir(s))`);
+		}
+
+		// Every example rewrites its references to the shared copy and skips
+		// staging those files (and asset dirs) into its own folder.
+		let tmpAll = tmpScripts.concat(tmpStyles);
+		for (let i = 0; i < tmpAll.length; i++)
+		{
+			tmpOut.Rewrites.set(tmpAll[i], tmpRelBase + tmpAll[i]);
+			tmpOut.Skip.add(tmpAll[i]);
+		}
+		for (let i = 0; i < tmpAssetDirs.length; i++)
+		{
+			tmpOut.Skip.add(tmpAssetDirs[i]);
+		}
+		return tmpOut;
 	}
 
 	/**

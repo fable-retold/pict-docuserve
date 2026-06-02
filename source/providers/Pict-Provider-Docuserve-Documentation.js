@@ -1291,6 +1291,16 @@ class DocuserveDocumentationProvider extends libPictProvider
 			return '';
 		}
 
+		// Absolute / protocol-relative URLs (and mailto:/tel:) are external
+		// navigation targets -- return them verbatim. Without this, module mode
+		// folds them through _toModulePageRoute, which strips the scheme's "//"
+		// and emits a dead "#/page/https:/host/..." route -- exactly what broke
+		// the Retold Ecosystem sidebar links.
+		if (/^(?:[a-z][a-z0-9+.\-]*:\/\/|\/\/|mailto:|tel:)/i.test(pHref))
+		{
+			return pHref;
+		}
+
 		// Already a fully-formed hash route (e.g. "#/page/examples/foo/README").
 		// Pass it straight through — the author has named the exact route, so
 		// do not re-derive one (re-deriving would mangle it into "#/page/#/...").
