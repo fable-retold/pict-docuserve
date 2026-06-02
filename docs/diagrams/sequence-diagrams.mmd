@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Browser
+    participant Docuserve
+    participant Provider
+    participant GitHub
+
+    Browser->>Docuserve: Navigate to #/doc/fable/fable
+    Docuserve->>Provider: resolveDocumentURL()
+    Provider-->>Docuserve: raw.githubusercontent.com URL
+    Docuserve->>GitHub: GET /docs/README.md
+    GitHub-->>Docuserve: Markdown content
+    Docuserve->>Provider: parseMarkdown()
+    Provider-->>Docuserve: HTML
+    Docuserve->>Browser: Display content

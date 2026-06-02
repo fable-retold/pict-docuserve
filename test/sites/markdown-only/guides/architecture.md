@@ -10,13 +10,7 @@ This page tests that nested paths (`guides/architecture.md`) work correctly when
 
 ## Diagram
 
-```mermaid
-graph TD
-    A[Application] --> B[Provider]
-    A --> C[Layout View]
-    C --> D[TopBar]
-    C --> E[Sidebar]
-    C --> F[Content]
-```
+<!-- bespoke diagram: edit diagrams/diagram.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/test/sites/markdown-only/guides -->
+![Diagram](diagrams/diagram.svg)
 
 > This blockquote should render with a green left border.

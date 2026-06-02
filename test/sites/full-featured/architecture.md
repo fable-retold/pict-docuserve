@@ -2,13 +2,8 @@
 
 ## System Components
 
-```mermaid
-graph LR
-    A[Browser] --> B[pict-docuserve]
-    B --> C[Markdown Files]
-    B --> D[Keyword Index]
-    B --> E[Configuration Files]
-```
+<!-- bespoke diagram: edit diagrams/system-components.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/test/sites/full-featured -->
+![System Components](diagrams/system-components.svg)
 
 ## Data Flow
 

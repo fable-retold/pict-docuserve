@@ -6,104 +6,42 @@ Docuserve supports [Mermaid](https://mermaid.js.org/) diagrams out of the box. A
 
 Flowcharts describe processes and decision trees.
 
-```mermaid
-graph TD
-    A[User Request] --> B{Authenticated?}
-    B -->|Yes| C[Load Dashboard]
-    B -->|No| D[Redirect to Login]
-    D --> E[Enter Credentials]
-    E --> F{Valid?}
-    F -->|Yes| C
-    F -->|No| G[Show Error]
-    G --> E
-```
+<!-- bespoke diagram: edit diagrams/flowcharts.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Flowcharts](diagrams/flowcharts.svg)
 
 **Source:**
 
 ````
-```mermaid
-graph TD
-    A[User Request] --> B{Authenticated?}
-    B -->|Yes| C[Load Dashboard]
-    B -->|No| D[Redirect to Login]
-    D --> E[Enter Credentials]
-    E --> F{Valid?}
-    F -->|Yes| C
-    F -->|No| G[Show Error]
-    G --> E
-```
+<!-- bespoke diagram: edit diagrams/flowcharts-2.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Flowcharts](diagrams/flowcharts-2.svg)
 ````
 
 ### Horizontal flowchart
 
 Use `graph LR` for left-to-right layouts.
 
-```mermaid
-graph LR
-    A[Markdown] --> B[parseMarkdown]
-    B --> C[HTML]
-    C --> D[DOM]
-    D --> E[Mermaid]
-    D --> F[KaTeX]
-    E --> G[SVG Diagrams]
-    F --> H[Rendered Equations]
-```
+<!-- bespoke diagram: edit diagrams/horizontal-flowchart.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Horizontal flowchart](diagrams/horizontal-flowchart.svg)
 
 **Source:**
 
 ````
-```mermaid
-graph LR
-    A[Markdown] --> B[parseMarkdown]
-    B --> C[HTML]
-    C --> D[DOM]
-    D --> E[Mermaid]
-    D --> F[KaTeX]
-    E --> G[SVG Diagrams]
-    F --> H[Rendered Equations]
-```
+<!-- bespoke diagram: edit diagrams/horizontal-flowchart-2.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Horizontal flowchart](diagrams/horizontal-flowchart-2.svg)
 ````
 
 ## Sequence Diagrams
 
 Sequence diagrams show interactions between participants over time.
 
-```mermaid
-sequenceDiagram
-    participant Browser
-    participant Docuserve
-    participant Provider
-    participant GitHub
-
-    Browser->>Docuserve: Navigate to #/doc/fable/fable
-    Docuserve->>Provider: resolveDocumentURL()
-    Provider-->>Docuserve: raw.githubusercontent.com URL
-    Docuserve->>GitHub: GET /docs/README.md
-    GitHub-->>Docuserve: Markdown content
-    Docuserve->>Provider: parseMarkdown()
-    Provider-->>Docuserve: HTML
-    Docuserve->>Browser: Display content
-```
+<!-- bespoke diagram: edit diagrams/sequence-diagrams.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Sequence Diagrams](diagrams/sequence-diagrams.svg)
 
 **Source:**
 
 ````
-```mermaid
-sequenceDiagram
-    participant Browser
-    participant Docuserve
-    participant Provider
-    participant GitHub
-
-    Browser->>Docuserve: Navigate to #/doc/fable/fable
-    Docuserve->>Provider: resolveDocumentURL()
-    Provider-->>Docuserve: raw.githubusercontent.com URL
-    Docuserve->>GitHub: GET /docs/README.md
-    GitHub-->>Docuserve: Markdown content
-    Docuserve->>Provider: parseMarkdown()
-    Provider-->>Docuserve: HTML
-    Docuserve->>Browser: Display content
-```
+<!-- bespoke diagram: edit diagrams/sequence-diagrams-2.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Sequence Diagrams](diagrams/sequence-diagrams-2.svg)
 ````
 
 ## Class Diagrams
@@ -232,66 +170,14 @@ stateDiagram-v2
 
 ER diagrams show database tables and their relationships.
 
-```mermaid
-erDiagram
-    USER ||--o{ ORDER : places
-    USER {
-        int id PK
-        string name
-        string email
-    }
-    ORDER ||--|{ LINE_ITEM : contains
-    ORDER {
-        int id PK
-        int user_id FK
-        date created
-        string status
-    }
-    LINE_ITEM {
-        int id PK
-        int order_id FK
-        int product_id FK
-        int quantity
-    }
-    PRODUCT ||--o{ LINE_ITEM : "included in"
-    PRODUCT {
-        int id PK
-        string name
-        float price
-    }
-```
+<!-- bespoke diagram: edit diagrams/entity-relationship-diagrams.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Entity Relationship Diagrams](diagrams/entity-relationship-diagrams.svg)
 
 **Source:**
 
 ````
-```mermaid
-erDiagram
-    USER ||--o{ ORDER : places
-    USER {
-        int id PK
-        string name
-        string email
-    }
-    ORDER ||--|{ LINE_ITEM : contains
-    ORDER {
-        int id PK
-        int user_id FK
-        date created
-        string status
-    }
-    LINE_ITEM {
-        int id PK
-        int order_id FK
-        int product_id FK
-        int quantity
-    }
-    PRODUCT ||--o{ LINE_ITEM : "included in"
-    PRODUCT {
-        int id PK
-        string name
-        float price
-    }
-```
+<!-- bespoke diagram: edit diagrams/entity-relationship-diagrams-2.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Entity Relationship Diagrams](diagrams/entity-relationship-diagrams-2.svg)
 ````
 
 ## Gantt Charts

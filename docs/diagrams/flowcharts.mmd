@@ -1,0 +1,9 @@
+graph TD
+    A[User Request] --> B{Authenticated?}
+    B -->|Yes| C[Load Dashboard]
+    B -->|No| D[Redirect to Login]
+    D --> E[Enter Credentials]
+    E --> F{Valid?}
+    F -->|Yes| C
+    F -->|No| G[Show Error]
+    G --> E
