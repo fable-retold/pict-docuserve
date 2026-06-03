@@ -1,0 +1,10 @@
+graph LR
+    CoverMd["_cover.md"] --> AppDataCover["AppData.Cover"]
+    AppDataCover --> SplashView["Splash View"]
+    CatalogJson["retold-catalog.json"] --> AppDataCatalog["AppData.Catalog"]
+    AppDataCatalog -->|fallback| AppDataSidebarGroups["AppData.SidebarGroups"]
+    CatalogJson --> AppDataSidebarGroups
+    AppDataSidebarGroups --> SidebarView["Sidebar View"]
+    SidebarMd["_sidebar.md (overrides if present)"] --> AppDataSidebarGroups
+    KeywordIndex["retold-keyword-index.json"] --> LunrIndex["lunr Index"]
+    LunrIndex -->|only if index is available| SearchView["Search View / Sidebar Search"]

@@ -53,20 +53,8 @@ Hash-based routing with these patterns:
 
 ## Data Flow
 
-```
-                    _cover.md ──> AppData.Cover ──> Splash View
-                        │
-retold-catalog.json ──> AppData.Catalog
-        │                   │
-        │               (fallback)
-        │                   │
-        └──> AppData.SidebarGroups ──> Sidebar View
-                        │
-                _sidebar.md (overrides if present)
-
-retold-keyword-index.json ──> lunr Index ──> Search View / Sidebar Search
-                                              (only if index is available)
-```
+<!-- bespoke diagram: edit diagrams/data-flow.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Data Flow](diagrams/data-flow.svg)
 
 The catalog always loads first and provides default sidebar data. Then `_cover.md`, `_sidebar.md`, `_topbar.md`, and `retold-keyword-index.json` load in parallel; if they succeed, they override the defaults. Search UI only appears when the keyword index is available.
 
