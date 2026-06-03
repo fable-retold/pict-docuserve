@@ -656,7 +656,8 @@ const _ViewConfiguration =
 		   tokens per theme so the diagrams follow light/dark like everything
 		   else.  Mirrors the .theme-dark + prefers-color-scheme pattern the
 		   mermaid rules above use. */
-		.pict-content
+		.pict-content,
+		.pict-fullscreen-overlay
 		{
 			--diagram-ink:        #1B1F23;
 			--diagram-paper:      #FBF7EE;
@@ -665,7 +666,8 @@ const _ViewConfiguration =
 			--diagram-deemphasis: #8A7F72;
 			--diagram-link:       #2E7D74;
 		}
-		.theme-dark .pict-content
+		.theme-dark .pict-content,
+		.theme-dark .pict-fullscreen-overlay
 		{
 			--diagram-ink:        #E8E0D4;
 			--diagram-paper:      #20262E;
@@ -676,7 +678,8 @@ const _ViewConfiguration =
 		}
 		@media (prefers-color-scheme: dark)
 		{
-			html:not(.theme-light) .pict-content
+			html:not(.theme-light) .pict-content,
+			html:not(.theme-light) .pict-fullscreen-overlay
 			{
 				--diagram-ink:        #E8E0D4;
 				--diagram-paper:      #20262E;
@@ -848,6 +851,13 @@ class DocuserveContentView extends libPictContentView
 					if (tmpAlt) { tmpImported.setAttribute('aria-label', tmpAlt); }
 					let tmpWrapper = document.createElement('span');
 					tmpWrapper.className = 'docuserve-inline-diagram';
+					// Click-to-zoom: the content view's fullscreen overlay understands
+					// the 'diagram' source kind (clones the inner <svg>).  Tagging the
+					// wrapper is enough -- the delegated click handler picks it up even
+					// though we add this element asynchronously, after the initial
+					// enableFullscreenViewers() pass tagged images + mermaid.
+					tmpWrapper.setAttribute('data-fullscreen-source', 'diagram');
+					tmpWrapper.setAttribute('data-fullscreen-title', tmpAlt || 'Diagram');
 					tmpWrapper.appendChild(tmpImported);
 					tmpImage.parentNode.replaceChild(tmpWrapper, tmpImage);
 				})
