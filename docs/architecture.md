@@ -60,33 +60,5 @@ The catalog always loads first and provides default sidebar data. Then `_cover.m
 
 ## File Structure
 
-```
-pict-docuserve/
-├── source/
-│   ├── Pict-Application-Docuserve.js
-│   ├── Pict-Application-Docuserve-Configuration.json
-│   ├── cli/
-│   │   ├── Docuserve-CLI-Run.js             # CLI entry point (bin)
-│   │   ├── Docuserve-CLI-Program.js         # CLI program setup
-│   │   └── commands/
-│   │       ├── Docuserve-Command-Serve.js   # serve command
-│   │       └── Docuserve-Command-Inject.js  # inject command
-│   ├── providers/
-│   │   └── Pict-Provider-Docuserve-Documentation.js
-│   └── views/
-│       ├── PictView-Docuserve-Layout.js
-│       ├── PictView-Docuserve-TopBar.js
-│       ├── PictView-Docuserve-Sidebar.js
-│       ├── PictView-Docuserve-Splash.js
-│       ├── PictView-Docuserve-Content.js
-│       └── PictView-Docuserve-Search.js
-├── html/index.html
-├── css/docuserve.css
-├── docs/                    # This documentation
-├── example_applications/    # Example doc sites (markdown only)
-│   ├── build-examples.js   # Helper script to serve examples
-│   ├── todo-app/docs/
-│   ├── contacts-app/docs/
-│   └── sports-stats-api/docs/
-└── dist/                    # Build output
-```
+<!-- bespoke diagram: edit diagrams/file-structure.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![File Structure](diagrams/file-structure.svg)

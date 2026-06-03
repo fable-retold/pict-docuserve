@@ -39,20 +39,8 @@ npx pict-docuserve inject ./docs
 
 After injection, the folder contains your markdown files alongside:
 
-```
-docs/
-├── index.html                    # Pict app entry point
-├── pict-docuserve.min.js         # Bundled application
-├── pict-docuserve.min.js.map     # Source map
-├── css/
-│   └── docuserve.css             # Base styles
-├── js/
-│   └── pict.min.js               # Pict library
-├── .nojekyll                     # GitHub Pages marker
-├── _cover.md                      # Your splash content
-├── _sidebar.md                   # Your sidebar navigation
-└── *.md                          # Your documentation pages
-```
+<!-- bespoke diagram: edit diagrams/injecting-for-static-hosting.mmd or .hints.json, then: npx pict-renderer-graph build modules/pict/pict-docuserve/docs -->
+![Injecting for Static Hosting](diagrams/injecting-for-static-hosting.svg)
 
 Deploy this folder to GitHub Pages, Netlify, or any HTTP server.
 
