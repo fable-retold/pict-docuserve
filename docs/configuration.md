@@ -83,7 +83,7 @@ https://raw.githubusercontent.com/{GitHubOrg}/{Repo}/{Branch}/docs/{path}
 For example, navigating to `#/doc/fable/fable` fetches:
 
 ```
-https://raw.githubusercontent.com/stevenvelozo/fable/master/docs/README.md
+https://raw.githubusercontent.com/fable-retold/fable/master/docs/README.md
 ```
 
 ## Styling

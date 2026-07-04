@@ -217,12 +217,12 @@ suite
 					(fDone) =>
 					{
 						var tmpProvider = createProvider();
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable')).to.equal('#/doc/fable/fable');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable-log')).to.equal('#/doc/fable/fable-log');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/foxhound')).to.equal('#/doc/meadow/foxhound');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/pict')).to.equal('#/doc/pict/pict');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/pict-template')).to.equal('#/doc/pict/pict-template');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/precedent')).to.equal('#/doc/utility/precedent');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable-log')).to.equal('#/doc/fable/fable-log');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/foxhound')).to.equal('#/doc/meadow/foxhound');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/pict')).to.equal('#/doc/pict/pict');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/pict-template')).to.equal('#/doc/pict/pict-template');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/precedent')).to.equal('#/doc/utility/precedent');
 						fDone();
 					}
 				);
@@ -235,8 +235,8 @@ suite
 						var tmpResolver = tmpProvider._createLinkResolver('pict', 'pict', 'README.md');
 						// github.com URLs must NOT be auto-rewritten into internal #/doc/ routes;
 						// returning null lets the content renderer emit a normal external link.
-						Expect(tmpResolver('https://github.com/stevenvelozo/fable', 'Source')).to.equal(null);
-						Expect(tmpResolver('https://github.com/stevenvelozo/pict/blob/main/source/Pict.js', 'Pict.js')).to.equal(null);
+						Expect(tmpResolver('https://github.com/fable-retold/fable', 'Source')).to.equal(null);
+						Expect(tmpResolver('https://github.com/fable-retold/pict/blob/main/source/Pict.js', 'Pict.js')).to.equal(null);
 						fDone();
 					}
 				);
@@ -246,9 +246,9 @@ suite
 					(fDone) =>
 					{
 						var tmpProvider = createProvider();
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable/')).to.equal('#/doc/fable/fable');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable/tree/master')).to.equal('#/doc/fable/fable');
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/meadow-endpoints/issues')).to.equal('#/doc/meadow/meadow-endpoints');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable/')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable/tree/master')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/meadow-endpoints/issues')).to.equal('#/doc/meadow/meadow-endpoints');
 						fDone();
 					}
 				);
@@ -304,7 +304,7 @@ suite
 					(fDone) =>
 					{
 						var tmpProvider = createProvider();
-						Expect(tmpProvider.resolveGitHubURLToRoute('http://github.com/stevenvelozo/fable')).to.equal('#/doc/fable/fable');
+						Expect(tmpProvider.resolveGitHubURLToRoute('http://github.com/fable-retold/fable')).to.equal('#/doc/fable/fable');
 						fDone();
 					}
 				);
@@ -315,7 +315,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						tmpProvider._Catalog = null;
-						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/stevenvelozo/fable')).to.equal(null);
+						Expect(tmpProvider.resolveGitHubURLToRoute('https://github.com/fable-retold/fable')).to.equal(null);
 						fDone();
 					}
 				);
@@ -333,9 +333,9 @@ suite
 					(fDone) =>
 					{
 						var tmpProvider = createProvider();
-						Expect(tmpProvider.resolveGitHubRepoURL('fable', 'fable')).to.equal('https://github.com/stevenvelozo/fable');
-						Expect(tmpProvider.resolveGitHubRepoURL('meadow', 'foxhound')).to.equal('https://github.com/stevenvelozo/foxhound');
-						Expect(tmpProvider.resolveGitHubRepoURL('pict', 'pict-template')).to.equal('https://github.com/stevenvelozo/pict-template');
+						Expect(tmpProvider.resolveGitHubRepoURL('fable', 'fable')).to.equal('https://github.com/fable-retold/fable');
+						Expect(tmpProvider.resolveGitHubRepoURL('meadow', 'foxhound')).to.equal('https://github.com/fable-retold/foxhound');
+						Expect(tmpProvider.resolveGitHubRepoURL('pict', 'pict-template')).to.equal('https://github.com/fable-retold/pict-template');
 						fDone();
 					}
 				);
@@ -348,8 +348,8 @@ suite
 						// A repo exists regardless of whether it publishes a docs site, so the
 						// "view source" link is still offered when resolveGitHubPagesURL is null.
 						Expect(tmpProvider.resolveGitHubPagesURL('meadow', 'meadow-endpoints')).to.equal(null);
-						Expect(tmpProvider.resolveGitHubRepoURL('meadow', 'meadow-endpoints')).to.equal('https://github.com/stevenvelozo/meadow-endpoints');
-						Expect(tmpProvider.resolveGitHubRepoURL('utility', 'precedent')).to.equal('https://github.com/stevenvelozo/precedent');
+						Expect(tmpProvider.resolveGitHubRepoURL('meadow', 'meadow-endpoints')).to.equal('https://github.com/fable-retold/meadow-endpoints');
+						Expect(tmpProvider.resolveGitHubRepoURL('utility', 'precedent')).to.equal('https://github.com/fable-retold/precedent');
 						fDone();
 					}
 				);
@@ -402,7 +402,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						var tmpURL = tmpProvider.resolveDocumentURL('fable', 'fable', 'README.md');
-						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/stevenvelozo/fable/master/docs/README.md');
+						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/fable-retold/fable/master/docs/README.md');
 						fDone();
 					}
 				);
@@ -413,7 +413,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						var tmpURL = tmpProvider.resolveDocumentURL('fable', 'fable');
-						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/stevenvelozo/fable/master/docs/README.md');
+						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/fable-retold/fable/master/docs/README.md');
 						fDone();
 					}
 				);
@@ -424,7 +424,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						var tmpURL = tmpProvider.resolveDocumentURL('meadow', 'meadow-endpoints', 'api.md');
-						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/stevenvelozo/meadow-endpoints/develop/docs/api.md');
+						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/fable-retold/meadow-endpoints/develop/docs/api.md');
 						fDone();
 					}
 				);
@@ -435,7 +435,7 @@ suite
 					{
 						var tmpProvider = createProvider();
 						var tmpURL = tmpProvider.resolveDocumentURL('fable', 'fable', 'services/logging.md');
-						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/stevenvelozo/fable/master/docs/services/logging.md');
+						Expect(tmpURL).to.equal('https://raw.githubusercontent.com/fable-retold/fable/master/docs/services/logging.md');
 						fDone();
 					}
 				);
@@ -793,7 +793,7 @@ suite
 							+ '- **Fable** — Core ecosystem\n'
 							+ '- **Meadow** — Data access layer\n'
 							+ '[Get Started](getting-started.md)\n'
-							+ '[GitHub](https://github.com/stevenvelozo/retold)\n'
+							+ '[GitHub](https://github.com/fable-retold/retold)\n'
 						);
 						Expect(tmpCover).to.be.an('object');
 						Expect(tmpCover.Title).to.equal('Retold');
@@ -854,14 +854,14 @@ suite
 							'# Retold\n'
 							+ '- [Getting Started](getting-started.md)\n'
 							+ '- [Modules](modules.md)\n'
-							+ '- [GitHub](https://github.com/stevenvelozo/retold)\n'
+							+ '- [GitHub](https://github.com/fable-retold/retold)\n'
 						);
 						Expect(tmpTopbar.Brand).to.equal('Retold');
 						Expect(tmpTopbar.NavLinks.length).to.equal(2);
 						Expect(tmpTopbar.NavLinks[0].Text).to.equal('Getting Started');
 						Expect(tmpTopbar.ExternalLinks.length).to.equal(1);
 						Expect(tmpTopbar.ExternalLinks[0].Text).to.equal('GitHub');
-						Expect(tmpTopbar.ExternalLinks[0].Href).to.equal('https://github.com/stevenvelozo/retold');
+						Expect(tmpTopbar.ExternalLinks[0].Href).to.equal('https://github.com/fable-retold/retold');
 						fDone();
 					}
 				);
@@ -988,8 +988,8 @@ suite
 					{
 						var tmpProvider = createProvider();
 						var tmpResolver = tmpProvider._createLinkResolver();
-						var tmpResult = tmpProvider._ContentProvider.parseInline('[fable](https://github.com/stevenvelozo/fable)', tmpResolver);
-						Expect(tmpResult).to.contain('href="https://github.com/stevenvelozo/fable"');
+						var tmpResult = tmpProvider._ContentProvider.parseInline('[fable](https://github.com/fable-retold/fable)', tmpResolver);
+						Expect(tmpResult).to.contain('href="https://github.com/fable-retold/fable"');
 						Expect(tmpResult).to.contain('target="_blank"');
 						Expect(tmpResult).to.not.contain('#/doc/');
 						fDone();
